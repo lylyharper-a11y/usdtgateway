@@ -19,6 +19,9 @@ app.use(express.json());
 // Static files
 app.use("/admin", express.static(path.join(__dirname, "../public/admin")));
 app.use("/demo", express.static(path.join(__dirname, "../public/demo")));
+app.use("/docs", express.static(path.join(__dirname, "../public/docs")));
+app.get("/docs/guide", (_req, res) => res.sendFile(path.join(__dirname, "../public/docs/guide.html")));
+app.get("/docs/api", (_req, res) => res.sendFile(path.join(__dirname, "../public/docs/api.html")));
 
 // Partner API (protected by API key + rate limit)
 app.use("/api/v1", rateLimitMiddleware, verifyApiKey, apiRoutes);

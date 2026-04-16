@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USDT Gateway — Hướng dẫn hệ thống</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--text:#e8e8f0;--text2:#a0a0b8;--text3:#666680;--accent:#f59e0b;--accent2:#10b981;--border:#2a2a3a;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:32px 24px 80px}
+.logo{text-align:center;padding:40px 0 32px}
+.logo h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{color:var(--text2);font-size:14px;margin-top:4px}
+nav{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:32px;display:flex;flex-wrap:wrap;gap:8px}
+nav a{color:var(--text2);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:8px;transition:all .2s}
+nav a:hover{background:var(--bg3);color:var(--accent)}
+h2{font-size:20px;font-weight:600;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);color:var(--accent)}
+h3{font-size:16px;font-weight:600;margin:24px 0 12px;color:var(--cyan)}
+h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--purple)}
+p{margin:8px 0;color:var(--text2);font-size:14px}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:4px 0;font-size:14px;color:var(--text2)}
+li b{color:var(--text)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--bg3);color:var(--accent);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:hover td{background:rgba(255,255,255,.02)}
+code{font-family:'JetBrains Mono',monospace;background:var(--bg3);color:var(--accent);padding:2px 6px;border-radius:4px;font-size:12px}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;overflow-x:auto;font-size:13px;line-height:1.6}
+pre code{background:none;padding:0;color:var(--text)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(16,185,129,.15);color:#10b981}
+.badge-red{background:rgba(239,68,68,.15);color:#ef4444}
+.badge-yellow{background:rgba(245,158,11,.15);color:#f59e0b}
+.badge-blue{background:rgba(59,130,246,.15);color:#3b82f6}
+.flow{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin:12px 0;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--accent2);line-height:2}
+.links{display:flex;gap:12px;margin:20px 0;flex-wrap:wrap}
+.links a{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);text-decoration:none;font-size:13px;font-weight:500;transition:all .2s}
+.links a:hover{border-color:var(--accent);background:rgba(245,158,11,.05)}
+.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:13px;color:var(--accent)}
+.danger{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:13px;color:var(--red)}
+hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+@media(max-width:600px){.container{padding:16px 12px}h2{font-size:18px}nav{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="logo">
+  <h1>💎 USDT Gateway</h1>
+  <p>Hệ thống cổng thanh toán USDT (TRC20) tự động</p>
+</div>
+
+<nav>
+  <a href="#overview">Tổng quan</a>
+  <a href="#features">Chức năng</a>
+  <a href="#admin">Admin CMS</a>
+  <a href="#telegram">Telegram Bot</a>
+  <a href="#auto">Tự động hoá</a>
+  <a href="#security">Bảo mật</a>
+  <a href="#flow">Flow hoạt động</a>
+  <a href="#status">Trạng thái</a>
+  <a href="#notes">Lưu ý</a>
+</nav>
+
+<div class="links">
+  <a href="/admin/">🔧 Admin CMS</a>
+  <a href="/demo/">🧪 Demo Test</a>
+  <a href="/docs/api">📡 API Docs</a>
+  <a href="/health">❤️ Health Check</a>
+</div>
+
+<h2 id="overview">1. Tổng quan</h2>
+<p>USDT Gateway là hệ thống cổng thanh toán USDT (TRC20) tự động, cho phép đối tác (partner) tích hợp nạp/rút USDT thông qua REST API.</p>
+
+<div class="card">
+<h4>Thành phần hệ thống</h4>
+<table>
+<tr><th>Module</th><th>Mô tả</th></tr>
+<tr><td><b>Partner API</b></td><td>REST API cho đối tác tích hợp nạp/rút/tra cứu</td></tr>
+<tr><td><b>Admin CMS</b></td><td>Bảng điều khiển quản trị</td></tr>
+<tr><td><b>Telegram Bot</b></td><td>Thông báo real-time + OTP bảo mật</td></tr>
+<tr><td><b>Blockchain Monitor</b></td><td>Tự động phát hiện giao dịch on-chain</td></tr>
+<tr><td><b>Auto Withdrawal</b></td><td>Tự động gửi USDT khi lệnh được duyệt</td></tr>
+</table>
+</div>
+
+<h2 id="features">2. Tổng hợp chức năng</h2>
+
+<div class="card">
+<table>
+<tr><th>Chức năng</th><th>Mô tả</th><th>Trạng thái</th></tr>
+<tr><td>Nạp USDT</td><td>Tạo QR, tự động detect on-chain, confirm, callback</td><td><span class="badge badge-green">✅ Active</span></td></tr>
+<tr><td>Rút USDT</td><td>Tạo lệnh rút, duyệt thủ công/tự động, gửi on-chain</td><td><span class="badge badge-green">✅ Active</span></td></tr>
+<tr><td>Tỷ giá</td><td>Tự động (Binance P2P) hoặc thủ công</td><td><span class="badge badge-green">✅ Active</span></td></tr>
+<tr><td>Webhook</td><td>Callback HMAC-signed khi giao dịch hoàn tất</td><td><span class="badge badge-green">✅ Active</span></td></tr>
+<tr><td>2FA OTP</td><td>Mã OTP gửi Telegram khi duyệt rút</td><td><span class="badge badge-yellow">⚙️ Configurable</span></td></tr>
+<tr><td>Telegram Alerts</td><td>Thông báo nạp/rút/login/TRX thấp</td><td><span class="badge badge-green">✅ Active</span></td></tr>
+<tr><td>Rate Limiting</td><td>Giới hạn request/phút cho API</td><td><span class="badge badge-green">✅ Active</span></td></tr>
+<tr><td>Daily Limit</td><td>Giới hạn rút/ngày (USDT)</td><td><span class="badge badge-yellow">⚙️ Configurable</span></td></tr>
+<tr><td>Cooldown</td><td>Khoảng cách tối thiểu giữa 2 lệnh rút</td><td><span class="badge badge-yellow">⚙️ Configurable</span></td></tr>
+<tr><td>IP Whitelist</td><td>Giới hạn IP truy cập Admin</td><td><span class="badge badge-yellow">⚙️ Configurable</span></td></tr>
+</table>
+</div>
+
+<h2 id="admin">3. Admin CMS</h2>
+<p>Truy cập: <a href="/admin/" style="color:var(--accent)">/admin/</a> — Đăng nhập bằng tài khoản admin.</p>
+
+<h3>📊 Dashboard</h3>
+<ul>
+<li>Tổng nạp/rút USDT (hôm nay + tổng cộng)</li>
+<li>Số dư ví on-chain <b>real-time</b> (truy vấn trực tiếp blockchain)</li>
+<li>Tỷ giá USDT/VND hiện tại</li>
+</ul>
+
+<h3>📥 Tab Nạp USDT</h3>
+<ul>
+<li>Danh sách tất cả lệnh nạp với phân trang (10/trang)</li>
+<li>Tìm kiếm theo mã đơn, TX Hash, địa chỉ ví</li>
+<li>Lọc theo ví nạp cụ thể</li>
+<li>Xác nhận thủ công cho giao dịch đặc biệt</li>
+<li>Bảng <b>"Giao dịch không khớp"</b> — TX nhận được nhưng không match đơn nào</li>
+</ul>
+
+<h3>📤 Tab Rút USDT</h3>
+<ul>
+<li>Danh sách lệnh rút: Chờ duyệt / Đã duyệt / Đang gửi / Đã gửi / Thất bại / Từ chối</li>
+<li><b>Duyệt / Từ chối</b> lệnh rút</li>
+<li>2FA OTP qua Telegram (nếu bật trong cài đặt)</li>
+</ul>
+
+<h3>💼 Tab Ví</h3>
+<ul>
+<li>Quản lý ví nạp/rút riêng biệt</li>
+<li>Thêm ví mới (địa chỉ + private key tự mã hóa)</li>
+<li>Import từ <b>seed phrase 12 từ</b> → tự derive private key</li>
+<li>Số dư USDT + TRX (gas) <b>real-time</b> từ blockchain</li>
+<li>Bật/tắt/xóa ví</li>
+</ul>
+
+<h3>👥 Tab Đối tác</h3>
+<ul>
+<li>Tạo partner: tên, API key (tự sinh), secret key, callback URL</li>
+<li>Cấu hình spread (chênh lệch giá mua/bán) cho từng partner</li>
+</ul>
+
+<h3>⚙️ Tab Cài đặt</h3>
+<div class="card">
+<table>
+<tr><th>Mục</th><th>Cấu hình</th></tr>
+<tr><td>Tỷ giá</td><td>Tự động (Binance P2P) / Thủ công + thời gian hiệu lực QR</td></tr>
+<tr><td>Cấu hình rút</td><td>Thủ công / Tự động (dưới ngưỡng X USDT)</td></tr>
+<tr><td>TronGrid API</td><td>API key kết nối blockchain</td></tr>
+<tr><td>Telegram</td><td>Bot Token + Chat Group ID</td></tr>
+<tr><td>2FA OTP</td><td>Bật/tắt xác thực 2 lớp cho duyệt rút</td></tr>
+<tr><td>Giới hạn rút/ngày</td><td>Max USDT rút mỗi ngày (0 = tắt)</td></tr>
+<tr><td>Cooldown rút</td><td>Khoảng cách tối thiểu giữa 2 lệnh rút (phút)</td></tr>
+<tr><td>Rate limit API</td><td>Max requests/phút</td></tr>
+<tr><td>IP Whitelist</td><td>Bật/tắt + danh sách IP được phép truy cập admin</td></tr>
+</table>
+</div>
+
+<h2 id="telegram">4. Telegram Bot</h2>
+
+<h3>📢 Thông báo tự động</h3>
+<div class="card">
+<table>
+<tr><th>Sự kiện</th><th>Icon</th><th>Chi tiết</th></tr>
+<tr><td>Admin đăng nhập</td><td>🔐</td><td>IP, thiết bị, thời gian</td></tr>
+<tr><td>Lệnh nạp mới</td><td>📥</td><td>Mã đơn, số tiền, ví nhận</td></tr>
+<tr><td>Nạp thành công</td><td>✅</td><td>Mã đơn, số tiền, TX hash</td></tr>
+<tr><td>Lệnh rút mới</td><td>📤</td><td>Mã đơn, số tiền, ví gửi</td></tr>
+<tr><td>Rút chờ duyệt</td><td>⚠️</td><td>Kèm OTP nếu 2FA bật</td></tr>
+<tr><td>Rút thành công</td><td>💸</td><td>Mã đơn, TX hash</td></tr>
+<tr><td>Rút thất bại</td><td>❌</td><td>Mã đơn, lỗi</td></tr>
+<tr><td>TRX thấp</td><td>🔋</td><td>Ví, địa chỉ, số TRX còn lại</td></tr>
+<tr><td>Giao dịch không khớp</td><td>⚡</td><td>TX, số tiền, ví</td></tr>
+</table>
+</div>
+
+<h3>🤖 Lệnh bot</h3>
+<p>Gõ <code>/xem</code> trong nhóm Telegram → Xem tổng quan hệ thống: số ví, số dư, giao dịch hôm nay, quỹ ròng.</p>
+
+<h2 id="auto">5. Tự động hoá (Cron Jobs)</h2>
+<div class="card">
+<table>
+<tr><th>Job</th><th>Chu kỳ</th><th>Chức năng</th></tr>
+<tr><td><code>checkDeposits</code></td><td>30 giây</td><td>Quét blockchain phát hiện giao dịch nạp USDT</td></tr>
+<tr><td><code>processWithdrawals</code></td><td>10 giây</td><td>Gửi USDT cho lệnh rút đã duyệt</td></tr>
+<tr><td><code>expireDeposits</code></td><td>5 phút</td><td>Hết hạn đơn nạp quá thời gian</td></tr>
+<tr><td><code>updateBalances</code></td><td>2 phút</td><td>Cập nhật số dư ví on-chain</td></tr>
+</table>
+</div>
+
+<h2 id="security">6. Bảo mật</h2>
+<div class="card">
+<ul>
+<li><b>Private Key</b> mã hóa AES-256-CBC trong database</li>
+<li><b>API Key</b> xác thực mỗi partner</li>
+<li><b>HMAC-SHA256 Signature</b> cho webhook callback</li>
+<li><b>2FA OTP</b> (Telegram) cho duyệt rút — bật/tắt trong cài đặt</li>
+<li><b>Rate Limiting</b> API — cấu hình số request/phút</li>
+<li><b>IP Whitelist</b> cho admin — bật/tắt + danh sách IP</li>
+<li><b>Giới hạn rút/ngày</b> + <b>Cooldown</b> chống rút ồ ạt</li>
+<li><b>Login Alert</b> — mỗi lần admin đăng nhập đều thông báo Telegram (IP, thiết bị)</li>
+</ul>
+</div>
+
+<h2 id="flow">7. Flow hoạt động</h2>
+
+<h3>📥 Flow Nạp USDT</h3>
+<div class="flow">
+Partner gọi POST /deposit<br>
+→ Hệ thống tạo đơn + gán ví nhận<br>
+→ Partner hiển thị QR cho user<br>
+→ User chuyển USDT vào ví (đúng số tiền)<br>
+→ Cron quét blockchain phát hiện TX<br>
+→ Khớp số tiền → trạng thái CONFIRMED<br>
+→ Webhook callback về partner<br>
+→ Telegram alert ✅
+</div>
+
+<h3>📤 Flow Rút USDT</h3>
+<div class="flow">
+Partner gọi POST /withdraw<br>
+→ Hệ thống tạo đơn PENDING<br>
+→ [Auto mode] Dưới ngưỡng → tự động APPROVED<br>
+→ [Manual mode] Admin duyệt (kèm OTP nếu 2FA bật)<br>
+→ Cron gửi USDT on-chain → SENT<br>
+→ Webhook callback về partner<br>
+→ Telegram alert 💸
+</div>
+
+<h2 id="status">8. Trạng thái giao dịch</h2>
+<div class="card">
+<h4>Nạp:</h4>
+<p><span class="badge badge-yellow">PENDING</span> → <span class="badge badge-green">CONFIRMED</span> / <span class="badge badge-red">EXPIRED</span></p>
+<h4 style="margin-top:12px">Rút:</h4>
+<p><span class="badge badge-yellow">PENDING</span> → <span class="badge badge-blue">APPROVED</span> → <span class="badge badge-yellow">SENDING</span> → <span class="badge badge-green">SENT</span> / <span class="badge badge-red">FAILED</span> / <span class="badge badge-red">REJECTED</span></p>
+</div>
+
+<h2 id="notes">9. Lưu ý quan trọng</h2>
+<div class="danger">
+<b>⚠️ Hệ thống chạy trên TRON Mainnet — mọi giao dịch đều dùng USDT thật!</b>
+</div>
+<div class="warn">
+<ol style="padding-left:18px">
+<li>Khi nạp, user phải chuyển <b>đúng số USDT</b> đã tạo đơn. Sai số tiền → không tự động xác nhận.</li>
+<li>Khi rút, kiểm tra kỹ <b>địa chỉ ví nhận</b>. Sai ví → USDT mất không lấy lại được.</li>
+<li>Ví rút cần ≥ <b>30 TRX</b> để trả phí gas. Hết TRX → lệnh rút thất bại.</li>
+<li>Không chia sẻ API Key / Secret Key / Private Key ra ngoài.</li>
+<li><b>ENCRYPTION_KEY</b> không được thay đổi sau khi đã có ví trong hệ thống.</li>
+<li>Backup database PostgreSQL định kỳ.</li>
+</ol>
+</div>
+
+</div>
+</body>
+</html>

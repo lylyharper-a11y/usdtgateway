@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USDT Gateway — API Documentation</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0f;--bg2:#12121a;--bg3:#1a1a26;--text:#e8e8f0;--text2:#a0a0b8;--text3:#666680;--accent:#f59e0b;--accent2:#10b981;--border:#2a2a3a;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;--cyan:#06b6d4}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.7;min-height:100vh}
+.container{max-width:900px;margin:0 auto;padding:32px 24px 80px}
+.logo{text-align:center;padding:40px 0 32px}
+.logo h1{font-size:28px;font-weight:700;background:linear-gradient(135deg,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{color:var(--text2);font-size:14px;margin-top:4px}
+.links{display:flex;gap:12px;margin:20px 0;flex-wrap:wrap}
+.links a{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;background:var(--bg2);border:1px solid var(--border);border-radius:10px;color:var(--text);text-decoration:none;font-size:13px;font-weight:500;transition:all .2s}
+.links a:hover{border-color:var(--accent);background:rgba(245,158,11,.05)}
+nav{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 20px;margin-bottom:32px;display:flex;flex-wrap:wrap;gap:8px}
+nav a{color:var(--text2);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:8px;transition:all .2s}
+nav a:hover{background:var(--bg3);color:var(--accent)}
+h2{font-size:20px;font-weight:600;margin:40px 0 16px;padding-bottom:8px;border-bottom:1px solid var(--border);color:var(--blue)}
+h3{font-size:16px;font-weight:600;margin:24px 0 12px;color:var(--cyan)}
+h4{font-size:14px;font-weight:600;margin:16px 0 8px;color:var(--purple)}
+p{margin:8px 0;color:var(--text2);font-size:14px}
+ul,ol{padding-left:24px;margin:8px 0}
+li{margin:4px 0;font-size:14px;color:var(--text2)}
+li b{color:var(--text)}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13px}
+th{background:var(--bg3);color:var(--blue);padding:10px 12px;text-align:left;font-weight:600;border-bottom:2px solid var(--border)}
+td{padding:8px 12px;border-bottom:1px solid var(--border);color:var(--text2)}
+tr:hover td{background:rgba(255,255,255,.02)}
+code{font-family:'JetBrains Mono',monospace;background:var(--bg3);color:var(--accent);padding:2px 6px;border-radius:4px;font-size:12px}
+pre{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;margin:12px 0;overflow-x:auto;font-size:13px;line-height:1.6;position:relative}
+pre code{background:none;padding:0;color:var(--text)}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px;margin:16px 0}
+.method{display:inline-block;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:700;font-family:'JetBrains Mono',monospace;margin-right:8px}
+.get{background:rgba(16,185,129,.15);color:#10b981}
+.post{background:rgba(59,130,246,.15);color:#3b82f6}
+.endpoint{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text);font-weight:500}
+.param-req{color:var(--red);font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:600}
+.badge-green{background:rgba(16,185,129,.15);color:#10b981}
+.badge-red{background:rgba(239,68,68,.15);color:#ef4444}
+.badge-yellow{background:rgba(245,158,11,.15);color:#f59e0b}
+.warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:14px 18px;margin:12px 0;font-size:13px;color:var(--accent)}
+.copy-btn{position:absolute;top:8px;right:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text3);padding:4px 10px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .2s}
+.copy-btn:hover{color:var(--accent);border-color:var(--accent)}
+hr{border:none;border-top:1px solid var(--border);margin:32px 0}
+.auth-box{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:16px;margin:16px 0}
+.auth-box code{font-size:13px}
+@media(max-width:600px){.container{padding:16px 12px}h2{font-size:18px}nav{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="logo">
+  <h1>📡 USDT Gateway API</h1>
+  <p>REST API Documentation cho đối tác tích hợp</p>
+</div>
+
+<div class="links">
+  <a href="/docs/guide">📖 Hướng dẫn hệ thống</a>
+  <a href="/admin/">🔧 Admin CMS</a>
+  <a href="/demo/">🧪 Demo Test</a>
+</div>
+
+<nav>
+  <a href="#auth">Authentication</a>
+  <a href="#rate">Tỷ giá</a>
+  <a href="#deposit">Nạp</a>
+  <a href="#withdraw">Rút</a>
+  <a href="#status">Tra cứu</a>
+  <a href="#history">Lịch sử</a>
+  <a href="#callback">Webhook</a>
+  <a href="#errors">Mã lỗi</a>
+  <a href="#examples">Ví dụ</a>
+  <a href="#checklist">Checklist</a>
+</nav>
+
+<div class="auth-box">
+  <h4 style="margin-top:0;color:var(--blue)">🔑 Authentication</h4>
+  <p>Mỗi request cần header:</p>
+  <pre><code>x-api-key: ugw_your_api_key_here</code></pre>
+  <p>Lấy API Key từ admin → Tab "Đối tác" → Tạo đối tác mới.</p>
+</div>
+
+<!-- RATE -->
+<h2 id="rate">1. Lấy tỷ giá</h2>
+<p><span class="method get">GET</span> <span class="endpoint">/api/v1/rate</span></p>
+
+<h4>Response:</h4>
+<pre><code>{
+  "success": true,
+  "data": {
+    "baseRate": 25800,
+    "depositRate": 25542,
+    "withdrawRate": 26058,
+    "source": "binance_p2p",
+    "timestamp": "2026-04-16T02:00:00.000Z"
+  }
+}</code></pre>
+
+<table>
+<tr><th>Field</th><th>Mô tả</th></tr>
+<tr><td><code>baseRate</code></td><td>Tỷ giá gốc VND/USDT</td></tr>
+<tr><td><code>depositRate</code></td><td>Tỷ giá nạp (đã áp dụng spread)</td></tr>
+<tr><td><code>withdrawRate</code></td><td>Tỷ giá rút (đã áp dụng spread)</td></tr>
+<tr><td><code>source</code></td><td>Nguồn: <code>binance_p2p</code> hoặc <code>manual</code></td></tr>
+</table>
+
+<hr>
+
+<!-- DEPOSIT -->
+<h2 id="deposit">2. Tạo đơn nạp</h2>
+<p><span class="method post">POST</span> <span class="endpoint">/api/v1/deposit</span></p>
+
+<h4>Request Body:</h4>
+<pre><code>{
+  "amount": 100,
+  "orderId": "ORDER-001"
+}</code></pre>
+
+<table>
+<tr><th>Param</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+<tr><td><code>amount</code></td><td>number</td><td><span class="param-req">✅</span></td><td>Số USDT cần nạp</td></tr>
+<tr><td><code>orderId</code></td><td>string</td><td></td><td>Mã đơn phía partner (đối soát)</td></tr>
+</table>
+
+<h4>Response:</h4>
+<pre><code>{
+  "success": true,
+  "data": {
+    "orderCode": "UDEP-A1B2C3D4-E5F6",
+    "walletAddress": "TCYYWbxUpDB2DZqWaE4LM24XEA139yr9Hf",
+    "qrCodeUrl": "https://api.qrserver.com/v1/create-qr-code/?data=TCYYWb...",
+    "network": "TRC20",
+    "amount": 100,
+    "exchangeRate": 25542,
+    "estimatedVnd": 2554200,
+    "expiresAt": "2026-04-16 09:30:00 (GMT+7)",
+    "expiryMinutes": 30,
+    "status": "PENDING"
+  }
+}</code></pre>
+
+<div class="warn">⚠️ User phải chuyển <b>đúng</b> số USDT (<code>amount</code>). Sai số tiền sẽ không tự động xác nhận. Đơn hết hạn sau <code>expiryMinutes</code> phút.</div>
+
+<hr>
+
+<!-- WITHDRAW -->
+<h2 id="withdraw">3. Tạo đơn rút</h2>
+<p><span class="method post">POST</span> <span class="endpoint">/api/v1/withdraw</span></p>
+
+<h4>Request Body:</h4>
+<pre><code>{
+  "amount": 50,
+  "toAddress": "TVhCRWuqbEiDFKGtiqXYJLmoh9iiZsA6j4",
+  "network": "TRC20",
+  "orderId": "WD-001"
+}</code></pre>
+
+<table>
+<tr><th>Param</th><th>Type</th><th>Required</th><th>Mô tả</th></tr>
+<tr><td><code>amount</code></td><td>number</td><td><span class="param-req">✅</span></td><td>Số USDT rút</td></tr>
+<tr><td><code>toAddress</code></td><td>string</td><td><span class="param-req">✅</span></td><td>Địa chỉ ví TRC20 nhận</td></tr>
+<tr><td><code>network</code></td><td>string</td><td></td><td>Mạng (mặc định TRC20)</td></tr>
+<tr><td><code>orderId</code></td><td>string</td><td></td><td>Mã đơn phía partner</td></tr>
+</table>
+
+<h4>Response:</h4>
+<pre><code>{
+  "success": true,
+  "data": {
+    "orderCode": "UWD-X1Y2Z3W4-A5B6",
+    "amount": 50,
+    "exchangeRate": 26058,
+    "amountVnd": 1302900,
+    "toAddress": "TVhCRWuqbEiDFKGtiqXYJLmoh9iiZsA6j4",
+    "network": "TRC20",
+    "status": "PENDING"
+  }
+}</code></pre>
+
+<h4>Trạng thái rút:</h4>
+<p><span class="badge badge-yellow">PENDING</span> → <span class="badge badge-green">APPROVED</span> → <span class="badge badge-yellow">SENDING</span> → <span class="badge badge-green">SENT</span> / <span class="badge badge-red">FAILED</span> / <span class="badge badge-red">REJECTED</span></p>
+
+<hr>
+
+<!-- STATUS -->
+<h2 id="status">4. Tra cứu đơn</h2>
+<p><span class="method get">GET</span> <span class="endpoint">/api/v1/status/:orderCode</span></p>
+
+<h4>Response (Nạp):</h4>
+<pre><code>{
+  "success": true,
+  "data": {
+    "orderCode": "UDEP-A1B2C3D4-E5F6",
+    "type": "deposit",
+    "status": "CONFIRMED",
+    "amountUsdt": 100,
+    "amountVnd": 2554200,
+    "exchangeRate": 25542,
+    "txHash": "abc123...",
+    "createdAt": "2026-04-16T02:00:00.000Z"
+  }
+}</code></pre>
+
+<hr>
+
+<!-- HISTORY -->
+<h2 id="history">5. Lịch sử giao dịch</h2>
+<p><span class="method get">GET</span> <span class="endpoint">/api/v1/history</span></p>
+
+<table>
+<tr><th>Param</th><th>Default</th><th>Mô tả</th></tr>
+<tr><td><code>type</code></td><td><code>all</code></td><td><code>all</code> / <code>deposit</code> / <code>withdrawal</code></td></tr>
+<tr><td><code>status</code></td><td></td><td>Lọc theo trạng thái</td></tr>
+<tr><td><code>page</code></td><td><code>1</code></td><td>Trang</td></tr>
+<tr><td><code>limit</code></td><td><code>20</code></td><td>Số dòng/trang</td></tr>
+</table>
+
+<hr>
+
+<!-- CALLBACK -->
+<h2 id="callback">6. Webhook Callback</h2>
+<p>Khi trạng thái thay đổi, hệ thống gửi <code>POST</code> đến <code>callbackUrl</code> của partner.</p>
+
+<h4>Headers:</h4>
+<pre><code>Content-Type: application/json
+x-signature: &lt;HMAC-SHA256 of body using secretKey&gt;
+x-timestamp: &lt;ISO timestamp&gt;</code></pre>
+
+<h4>Body:</h4>
+<pre><code>{
+  "event": "deposit.confirmed",
+  "orderCode": "UDEP-A1B2C3D4-E5F6",
+  "amountUsdt": 100,
+  "amountVnd": 2554200,
+  "txHash": "abc123...",
+  "status": "CONFIRMED",
+  "timestamp": "2026-04-16T02:00:00.000Z"
+}</code></pre>
+
+<h4>Events:</h4>
+<table>
+<tr><th>Event</th><th>Mô tả</th></tr>
+<tr><td><code>deposit.confirmed</code></td><td>Nạp thành công</td></tr>
+<tr><td><code>withdrawal.completed</code></td><td>Rút thành công</td></tr>
+<tr><td><code>withdrawal.rejected</code></td><td>Rút bị từ chối</td></tr>
+</table>
+
+<h4>Xác thực Signature (Node.js):</h4>
+<pre><code>const crypto = require('crypto');
+
+function verifySignature(body, signature, secretKey) {
+  const expected = crypto
+    .createHmac('sha256', secretKey)
+    .update(JSON.stringify(body))
+    .digest('hex');
+  return expected === signature;
+}
+
+// Trong endpoint callback:
+app.post('/callback', (req, res) => {
+  const sig = req.headers['x-signature'];
+  if (!verifySignature(req.body, sig, 'YOUR_SECRET_KEY')) {
+    return res.status(403).send('Invalid signature');
+  }
+  // Xử lý event...
+  res.status(200).send('OK');
+});</code></pre>
+
+<h4>Xác thực Signature (PHP):</h4>
+<pre><code>function verifyCallback($body, $signature, $secretKey) {
+    $expected = hash_hmac('sha256', json_encode($body), $secretKey);
+    return hash_equals($expected, $signature);
+}</code></pre>
+
+<h4>Xác thực Signature (Python):</h4>
+<pre><code>import hmac, hashlib, json
+
+def verify_callback(body: dict, signature: str, secret: str) -> bool:
+    expected = hmac.new(
+        secret.encode(), json.dumps(body).encode(), hashlib.sha256
+    ).hexdigest()
+    return hmac.compare_digest(expected, signature)</code></pre>
+
+<hr>
+
+<!-- ERRORS -->
+<h2 id="errors">7. Mã lỗi</h2>
+<div class="card">
+<table>
+<tr><th>HTTP</th><th>Error</th><th>Mô tả</th></tr>
+<tr><td>400</td><td>Invalid amount</td><td>Số tiền không hợp lệ</td></tr>
+<tr><td>400</td><td>Invalid TRC20 address</td><td>Sai format ví TRC20</td></tr>
+<tr><td>400</td><td>Vượt giới hạn rút/ngày</td><td>Quá daily limit cấu hình</td></tr>
+<tr><td>401</td><td>Missing x-api-key</td><td>Thiếu header API key</td></tr>
+<tr><td>403</td><td>Invalid API key</td><td>Key sai hoặc bị vô hiệu</td></tr>
+<tr><td>404</td><td>Order not found</td><td>Không tìm thấy đơn</td></tr>
+<tr><td>429</td><td>Too many requests</td><td>Vượt rate limit</td></tr>
+<tr><td>429</td><td>Cooldown</td><td>Chờ cooldown rút</td></tr>
+<tr><td>503</td><td>No wallet available</td><td>Không có ví nạp trống</td></tr>
+</table>
+</div>
+
+<hr>
+
+<!-- EXAMPLES -->
+<h2 id="examples">8. Ví dụ tích hợp nhanh</h2>
+
+<h3>Node.js</h3>
+<pre><code>const API = 'http://103.161.225.245:3002/api/v1';
+const KEY = 'ugw_your_api_key';
+const headers = { 'Content-Type': 'application/json', 'x-api-key': KEY };
+
+// Tạo đơn nạp
+const dep = await fetch(`${API}/deposit`, {
+  method: 'POST', headers,
+  body: JSON.stringify({ amount: 100, orderId: 'MY-001' })
+}).then(r => r.json());
+
+console.log('Ví nạp:', dep.data.walletAddress);
+console.log('QR:', dep.data.qrCodeUrl);
+
+// Polling trạng thái
+const check = setInterval(async () => {
+  const s = await fetch(`${API}/status/${dep.data.orderCode}`, { headers })
+    .then(r => r.json());
+  if (s.data.status === 'CONFIRMED') {
+    console.log('✅ Nạp thành công!');
+    clearInterval(check);
+  }
+}, 10000);
+
+// Tạo đơn rút
+const wd = await fetch(`${API}/withdraw`, {
+  method: 'POST', headers,
+  body: JSON.stringify({ amount: 50, toAddress: 'TVhCRW...' })
+}).then(r => r.json());</code></pre>
+
+<h3>PHP</h3>
+<pre><code>$apiUrl = 'http://103.161.225.245:3002/api/v1';
+$apiKey = 'ugw_your_api_key';
+
+$ch = curl_init("$apiUrl/deposit");
+curl_setopt_array($ch, [
+    CURLOPT_POST => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER => [
+        'Content-Type: application/json',
+        "x-api-key: $apiKey",
+    ],
+    CURLOPT_POSTFIELDS => json_encode([
+        'amount' => 100,
+        'orderId' => 'PHP-001',
+    ]),
+]);
+$result = json_decode(curl_exec($ch), true);
+curl_close($ch);
+
+echo "Ví: " . $result['data']['walletAddress'];</code></pre>
+
+<h3>Python</h3>
+<pre><code>import requests
+
+API = 'http://103.161.225.245:3002/api/v1'
+headers = {'Content-Type': 'application/json', 'x-api-key': 'ugw_your_api_key'}
+
+r = requests.post(f'{API}/deposit', headers=headers,
+                   json={'amount': 100, 'orderId': 'PY-001'})
+data = r.json()['data']
+print(f"Ví: {data['walletAddress']}")
+print(f"Mã: {data['orderCode']}")</code></pre>
+
+<hr>
+
+<!-- CHECKLIST -->
+<h2 id="checklist">9. Checklist tích hợp</h2>
+<div class="card">
+<ol>
+<li>✅ Lấy API Key + Secret Key từ admin</li>
+<li>⬜ Test tạo đơn nạp trên trang <a href="/demo/" style="color:var(--accent)">Demo</a></li>
+<li>⬜ Implement callback endpoint (webhook) + xác thực signature</li>
+<li>⬜ Implement polling tra cứu trạng thái (backup cho callback)</li>
+<li>⬜ Test flow: nạp USDT → xác nhận → callback</li>
+<li>⬜ Test flow: rút USDT → duyệt → gửi → callback</li>
+<li>⬜ Deploy callback lên production</li>
+<li>⬜ Báo admin cập nhật callback URL</li>
+</ol>
+</div>
+
+</div>
+</body>
+</html>
