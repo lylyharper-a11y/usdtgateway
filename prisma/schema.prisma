@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Partner {
+  id            String   @id @default(uuid())
+  name          String
+  apiKey        String   @unique
+  secretKey     String                        // HMAC signing key for callbacks
+  callbackUrl   String?                       // Webhook URL
+  buySpread     Float    @default(1)          // % spread khi partner mua USDT
+  sellSpread    Float    @default(1)          // % spread khi partner bán USDT
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  deposits      Deposit[]
+  withdrawals   Withdrawal[]
+
+  @@map("partners")
+}
+
+model Wallet {
+  id            String   @id @default(uuid())
+  label         String
+  address       String   @unique
+  privateKey    String                        // Encrypted
+  network       String   @default("TRC20")
+  walletType    String   @default("BOTH")     // DEPOSIT | WITHDRAW | BOTH
+  status        String   @default("ACTIVE")   // ACTIVE | DISABLED
+  balance       Float    @default(0)
+  usageCount    Int      @default(0)          // Round-robin counter
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  deposits      Deposit[]
+
+  @@map("wallets")
+}
+
+model Deposit {
+  id            String    @id @default(uuid())
+  orderCode     String    @unique
+  externalId    String?                       // Partner's own order ID
+  partnerId     String
+  partner       Partner   @relation(fields: [partnerId], references: [id])
+  walletId      String?
+  wallet        Wallet?  @relation(fields: [walletId], references: [id], onDelete: SetNull)
+
+  amountUsdt    Float
+  exchangeRate  Float     @default(0)
+  amountVnd     Float     @default(0)
+
+  txHash        String?
+  fromAddress   String?
+
+  status        String    @default("PENDING") // PENDING | CONFIRMED | EXPIRED | FAILED
+  callbackSent  Boolean   @default(false)
+  expiresAt     DateTime
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("deposits")
+}
+
+model Withdrawal {
+  id            String    @id @default(uuid())
+  orderCode     String    @unique
+  externalId    String?
+  partnerId     String
+  partner       Partner   @relation(fields: [partnerId], references: [id])
+
+  amountUsdt    Float
+  exchangeRate  Float
+  amountVnd     Float
+
+  toAddress     String
+  toNetwork     String    @default("TRC20")
+  txHash        String?
+
+  status        String    @default("PENDING") // PENDING | APPROVED | SENDING | SENT | REJECTED | FAILED
+  callbackSent  Boolean   @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("withdrawals")
+}
+
+model RateHistory {
+  id        String   @id @default(uuid())
+  rate      Float
+  source    String
+  createdAt DateTime @default(now())
+
+  @@map("rate_history")
+}
+
+model AdminLog {
+  id        String   @id @default(uuid())
+  action    String
+  target    String?
+  detail    String?
+  createdAt DateTime @default(now())
+
+  @@map("admin_logs")
+}
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}

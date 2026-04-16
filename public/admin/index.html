@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>USDT Gateway - Admin</title>
+<style>
+:root{
+  --bg:#0f172a;--bg2:#1e293b;--bg3:#334155;--border:rgba(255,255,255,.05);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --input-bg:rgba(255,255,255,.05);--input-border:rgba(255,255,255,.1);
+  --hover:rgba(255,255,255,.02);--accent:#f59e0b;
+  --select-bg:#1e293b;--select-text:#e2e8f0;
+}
+[data-theme="light"]{
+  --bg:#f1f5f9;--bg2:#ffffff;--bg3:#e2e8f0;--border:rgba(0,0,0,.08);
+  --text:#1e293b;--text2:#475569;--text3:#64748b;
+  --input-bg:rgba(0,0,0,.03);--input-border:rgba(0,0,0,.12);
+  --hover:rgba(0,0,0,.02);
+  --select-bg:#ffffff;--select-text:#1e293b;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;transition:background .3s,color .3s}
+.header{background:var(--bg2);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;align-items:center;justify-content:space-between}
+.header h1{font-size:18px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.container{max-width:1200px;margin:0 auto;padding:24px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:24px}
+.stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:20px}
+.stat-card .label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.5px}
+.stat-card .value{font-size:28px;font-weight:700;margin-top:4px}
+.stat-card .sub{font-size:12px;color:var(--text3);margin-top:4px}
+.tabs{display:flex;gap:4px;background:var(--bg2);border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{padding:10px 20px;border-radius:10px;cursor:pointer;font-size:13px;font-weight:500;color:var(--text2);transition:.2s}
+.tab.active{background:var(--bg3);color:#f59e0b}
+.tab:hover{color:var(--text)}
+.panel{display:none}.panel.active{display:block}
+table{width:100%;border-collapse:collapse;font-size:13px}
+table th{text-align:left;padding:10px 12px;color:var(--text3);font-weight:500;text-transform:uppercase;font-size:11px;border-bottom:1px solid var(--border)}
+table td{padding:10px 12px;border-bottom:1px solid var(--border)}
+table tr:hover{background:var(--hover)}
+.badge{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.badge.pending{background:rgba(245,158,11,.15);color:#f59e0b}
+.badge.confirmed,.badge.sent{background:rgba(16,185,129,.15);color:#10b981}
+.badge.expired,.badge.failed,.badge.rejected{background:rgba(239,68,68,.15);color:#ef4444}
+.badge.approved,.badge.sending{background:rgba(59,130,246,.15);color:#3b82f6}
+.badge.active{background:rgba(16,185,129,.15);color:#10b981}
+.badge.disabled{background:rgba(100,116,139,.15);color:#64748b}
+.btn{padding:6px 14px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;transition:.2s}
+.btn-approve{background:rgba(16,185,129,.15);color:#10b981;border:1px solid rgba(16,185,129,.2)}
+.btn-approve:hover{background:rgba(16,185,129,.3)}
+.btn-reject{background:rgba(239,68,68,.1);color:#ef4444;border:1px solid rgba(239,68,68,.2)}
+.btn-reject:hover{background:rgba(239,68,68,.2)}
+.btn-primary{background:linear-gradient(135deg,#f59e0b,#06b6d4);color:#0f172a;border:none;padding:8px 20px}
+.btn-primary:hover{opacity:.9}
+.form-group{margin-bottom:12px}
+.form-group label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px 12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);font-size:13px}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#f59e0b}
+select{background:var(--select-bg)!important;color:var(--select-text)!important;-webkit-appearance:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E")!important;background-repeat:no-repeat!important;background-position:right 10px center!important;padding-right:28px!important}
+select option{background:var(--select-bg);color:var(--select-text);padding:8px}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--input-border);border-radius:16px;padding:24px;width:90%;max-width:500px}
+.modal h3{font-size:16px;margin-bottom:16px}
+.mono{font-family:'Fira Code',monospace;font-size:11px;color:var(--text2)}
+.text-green{color:#10b981}.text-red{color:#ef4444}.text-amber{color:#f59e0b}.text-blue{color:#3b82f6}
+.flex{display:flex}.gap-2{gap:8px}.mt-2{margin-top:8px}.mb-4{margin-bottom:16px}
+.theme-toggle{cursor:pointer;padding:6px 12px;border-radius:8px;background:var(--input-bg);border:1px solid var(--input-border);color:var(--text);font-size:13px;transition:.2s}
+.theme-toggle:hover{background:var(--bg3)}
+.filter-bar{margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.filter-bar label{font-size:12px;color:var(--text3)}
+.filter-bar select{padding:6px 12px;background:var(--select-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--select-text);font-size:12px}
+.filter-bar .count{font-size:11px;color:var(--text3)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" style="position:fixed;inset:0;z-index:999;background:#0f172a;display:flex;align-items:center;justify-content:center">
+  <div style="width:380px;text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">💎</div>
+    <h1 style="font-size:22px;font-weight:700;background:linear-gradient(135deg,#f59e0b,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:8px">USDT Gateway</h1>
+    <p style="font-size:13px;color:#64748b;margin-bottom:32px">Admin Panel</p>
+    <div style="background:#1e293b;border:1px solid rgba(255,255,255,.05);border-radius:16px;padding:28px">
+      <div class="form-group"><label style="text-align:left">Tài khoản</label><input id="loginUser" value="admin" placeholder="Username"></div>
+      <div class="form-group"><label style="text-align:left">Mật khẩu</label><input id="loginPass" type="password" placeholder="Password" onkeydown="if(event.key==='Enter')doLogin()"></div>
+      <div id="loginError" style="display:none;color:#ef4444;font-size:12px;margin-bottom:8px"></div>
+      <button onclick="doLogin()" style="width:100%;padding:12px;border:none;border-radius:10px;background:linear-gradient(135deg,#f59e0b,#06b6d4);color:#0f172a;font-size:14px;font-weight:700;cursor:pointer">Đăng nhập</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="mainApp" style="display:none">
+<div class="header">
+  <h1>💎 USDT Gateway Admin</h1>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="rateBadge" style="font-size:13px;color:var(--text2)">Loading...</span>
+    <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats" id="statsGrid"></div>
+  <div class="tabs">
+    <div class="tab active" onclick="showTab('deposits')">📥 Nạp USDT</div>
+    <div class="tab" onclick="showTab('withdrawals')">📤 Rút USDT</div>
+    <div class="tab" onclick="showTab('wallets')">💼 Ví</div>
+    <div class="tab" onclick="showTab('partners')">👥 Đối tác</div>
+    <div class="tab" onclick="showTab('settings')">⚙️ Cài đặt</div>
+  </div>
+  <div id="deposits" class="panel active"></div>
+  <div id="withdrawals" class="panel"></div>
+  <div id="wallets" class="panel"></div>
+  <div id="partners" class="panel"></div>
+  <div id="settings" class="panel"></div>
+</div>
+</div>
+
+<!-- Wallet Modal -->
+<div id="walletModal" class="modal-overlay">
+  <div class="modal" style="max-width:520px">
+    <h3>➕ Thêm ví USDT</h3>
+    <div style="background:var(--input-bg);border:1px solid var(--input-border);border-radius:10px;padding:12px;margin-bottom:14px">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:6px">🔑 Lấy từ Seed Phrase (12 từ)</div>
+      <div class="flex gap-2" style="align-items:flex-end">
+        <div class="form-group" style="flex:1;margin-bottom:0"><input id="wSeed" placeholder="word1 word2 ... word12" style="font-size:12px"></div>
+        <button class="btn btn-primary" onclick="deriveAndFill()" style="white-space:nowrap;padding:8px 14px">🔑 Lấy Key</button>
+      </div>
+      <div id="wSeedResult" style="display:none;margin-top:8px;font-size:11px;color:var(--text3)"></div>
+    </div>
+    <div class="form-group"><label>Tên ví</label><input id="wLabel" placeholder="Ví TRC20 chính"></div>
+    <div class="form-group"><label>Địa chỉ ví</label><input id="wAddress" placeholder="TXyz..."></div>
+    <div class="form-group"><label>Private Key</label><input id="wPrivateKey" type="password" placeholder="Sẽ được mã hoá"></div>
+    <div class="flex gap-2">
+      <div class="form-group" style="flex:1"><label>Loại ví</label><select id="wType"><option value="DEPOSIT">📥 Nạp</option><option value="WITHDRAW">📤 Rút</option><option value="BOTH" selected>🔁 Cả hai</option></select></div>
+      <div class="form-group" style="flex:1"><label>Network</label><select id="wNetwork"><option>TRC20</option><option>ERC20</option><option>BEP20</option></select></div>
+    </div>
+    <div class="flex gap-2 mt-2">
+      <button class="btn btn-primary" onclick="addWallet()">Thêm</button>
+      <button class="btn btn-reject" onclick="closeModal('walletModal')">Huỷ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Partner Modal -->
+<div id="partnerModal" class="modal-overlay">
+  <div class="modal">
+    <h3>➕ Thêm đối tác</h3>
+    <div class="form-group"><label>Tên</label><input id="pName" placeholder="Tên đối tác"></div>
+    <div class="form-group"><label>Callback URL</label><input id="pCallback" placeholder="https://..."></div>
+    <div class="flex gap-2">
+      <div class="form-group" style="flex:1"><label>Buy Spread %</label><input id="pBuy" type="number" value="1" step="0.1"></div>
+      <div class="form-group" style="flex:1"><label>Sell Spread %</label><input id="pSell" type="number" value="1" step="0.1"></div>
+    </div>
+    <div class="flex gap-2 mt-2">
+      <button class="btn btn-primary" onclick="addPartner()">Thêm</button>
+      <button class="btn btn-reject" onclick="closeModal('partnerModal')">Huỷ</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let AUTH = '';
+const H = { 'Content-Type': 'application/json' };
+
+async function doLogin() {
+  const user = document.getElementById('loginUser').value;
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  AUTH = 'Basic ' + btoa(user + ':' + pass);
+  H['Authorization'] = AUTH;
+  try {
+    const res = await fetch('/admin/api/stats', { headers: H });
+    if (res.ok) {
+      sessionStorage.setItem('ugw_auth', AUTH);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      load();
+    } else {
+      errEl.textContent = 'Sai tài khoản hoặc mật khẩu';
+      errEl.style.display = 'block'; AUTH = '';
+    }
+  } catch { errEl.textContent = 'Không thể kết nối server'; errEl.style.display = 'block'; }
+}
+
+if (sessionStorage.getItem('ugw_auth')) {
+  AUTH = sessionStorage.getItem('ugw_auth');
+  H['Authorization'] = AUTH;
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+}
+
+async function api(path, opts = {}) {
+  const res = await fetch('/admin/api' + path, { ...opts, headers: { ...H, ...(opts.headers||{}) } });
+  return res.json();
+}
+
+const SV = {PENDING:'⏳ Chờ xử lý',CONFIRMED:'✅ Đã xác nhận',EXPIRED:'⌛ Hết hạn',APPROVED:'✅ Đã duyệt',SENDING:'📤 Đang gửi',SENT:'🟢 Đã gửi',REJECTED:'❌ Từ chối',FAILED:'⚠️ Thất bại',DISABLED:'🔴 Tắt',ACTIVE:'🟢 Hoạt động'};
+function badge(s){return `<span class="badge ${s.toLowerCase()}">${SV[s]||s}</span>`;}
+function fmtDate(d){if(!d)return'-';const t=new Date(d);return String(t.getDate()).padStart(2,'0')+'/'+String(t.getMonth()+1).padStart(2,'0')+' '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');}
+function closeModal(id){document.getElementById(id).classList.remove('show');}
+function copyFull(t){navigator.clipboard.writeText(t);alert('Đã copy: '+t);}
+function sA(a){if(!a)return'-';return`<span class="mono" style="cursor:pointer;text-decoration:underline dotted" onclick="copyFull('${a}')" title="${a}">${a.slice(0,6)}…${a.slice(-4)}</span>`;}
+function sT(t){if(!t)return'-';return`<span class="mono" style="cursor:pointer;text-decoration:underline dotted" onclick="copyFull('${t}')" title="${t}">${t.slice(0,10)}…</span>`;}
+
+let dp=1,wp=1;const PS=10;
+function pg(d,p){const t=d.length,pp=Math.ceil(t/PS)||1,s=(p-1)*PS;return{items:d.slice(s,s+PS),total:t,pages:pp,page:p};}
+function pgr(pp,c,fn){if(pp<=1)return'';let h='<div style="display:flex;gap:4px;justify-content:center;margin-top:10px">';for(let i=1;i<=pp;i++){const a=i===c?'background:var(--accent);color:#fff':'background:var(--input-bg);color:var(--text2)';h+=`<button onclick="${fn}(${i})" style="padding:3px 9px;border:1px solid var(--border);border-radius:6px;cursor:pointer;font-size:11px;${a}">${i}</button>`;}return h+'</div>';}
+function gDP(p){dp=p;load();}
+function gWP(p){wp=p;load();}
+
+function showTab(name){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  event.target.classList.add('active');
+  if(name==='settings')loadSettings();else load();
+}
+
+async function load(){
+  const stats=await api('/stats');
+  if(stats.success){
+    const d=stats.data;
+    const ocb=d.onChainBalances||[];
+    const totalOnChain=ocb.reduce((s,b)=>s+(b.usdt||0),0);
+    document.getElementById('rateBadge').innerHTML=`Nạp: <b class="text-green">${d.rate.depositRate?.toLocaleString()}</b> | Rút: <b class="text-red">${d.rate.withdrawRate?.toLocaleString()}</b> <span style="color:var(--text3)">(${d.rate.source})</span>`;
+    document.getElementById('statsGrid').innerHTML=`
+      <div class="stat-card"><div class="label">Tổng nạp USDT</div><div class="value text-green">${d.deposits.total.toFixed(2)}</div><div class="sub">Hôm nay: ${d.deposits.today.toFixed(2)} | Chờ: ${d.deposits.pending}</div></div>
+      <div class="stat-card"><div class="label">Tổng rút USDT</div><div class="value text-red">${d.withdrawals.total.toFixed(2)}</div><div class="sub">Hôm nay: ${d.withdrawals.today.toFixed(2)} | Chờ: ${d.withdrawals.pending}</div></div>
+      <div class="stat-card"><div class="label">Số dư ví (on-chain)</div><div class="value text-blue">${totalOnChain.toFixed(2)}</div><div class="sub">${d.wallets.length} ví | ${ocb.map(b=>(b.label||b.address?.slice(0,6))+': '+b.usdt+' USDT').join(' | ')}</div></div>`;
+    window._ocb=d.onChainBalances||[];window._wl=d.wallets||[];
+  }
+  // DEPOSITS
+  const df=document.getElementById('depFilter')?.value||'';
+  const ds=document.getElementById('depSearch')?.value||'';
+  const dw=document.getElementById('depWalletFilter')?.value||'';
+  let dq='?limit=200';if(df)dq+='&status='+df;if(ds)dq+='&search='+encodeURIComponent(ds);if(dw)dq+='&walletId='+dw;
+  const deps=await api('/deposits'+dq);
+  if(deps.success){
+    const p=pg(deps.data,dp);
+    const wo=(window._wl||[]).map(w=>`<option value="${w.id}" ${dw===w.id?'selected':''}>${w.label||w.address.slice(0,10)}</option>`).join('');
+    document.getElementById('deposits').innerHTML=`
+      <div class="filter-bar">
+        <select id="depFilter" onchange="dp=1;load()"><option value="" ${df===''?'selected':''}>Tất cả</option><option value="PENDING" ${df==='PENDING'?'selected':''}>Chờ xử lý</option><option value="CONFIRMED" ${df==='CONFIRMED'?'selected':''}>Đã xác nhận</option><option value="EXPIRED" ${df==='EXPIRED'?'selected':''}>Hết hạn</option></select>
+        <select id="depWalletFilter" onchange="dp=1;load()"><option value="">Tất cả ví</option>${wo}</select>
+        <input id="depSearch" value="${ds}" placeholder="🔍 Tìm mã đơn, TX, ví..." onkeydown="if(event.key==='Enter'){dp=1;load()}" style="padding:5px 8px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);font-size:12px;width:190px">
+        <span class="count">${deps.data.length} đơn</span>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Ngày giờ</th><th>Mã đơn</th><th>Partner</th><th>USDT</th><th>VND</th><th>Ví nhận</th><th>Từ ví</th><th>TX Hash</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${p.items.map((d,i)=>`<tr>
+        <td style="color:var(--text3)">${(p.page-1)*PS+i+1}</td>
+        <td style="font-size:11px;white-space:nowrap">${fmtDate(d.createdAt)}</td>
+        <td class="mono" style="font-size:11px">${d.orderCode}</td>
+        <td>${d.partner?.name||'-'}</td>
+        <td><b>${d.amountUsdt}</b></td>
+        <td>${d.amountVnd?.toLocaleString()||'-'}</td>
+        <td>${sA(d.wallet?.address)}</td>
+        <td>${sA(d.fromAddress)}</td>
+        <td>${sT(d.txHash)}</td>
+        <td>${badge(d.status)}</td>
+        <td>${d.status==='PENDING'?`<button class="btn btn-approve" onclick="confirmDeposit('${d.id}')">✅</button>`:''}</td>
+      </tr>`).join('')}</tbody></table></div>${pgr(p.pages,p.page,'gDP')}`;
+    // Unmatched
+    const logs=await api('/admin-logs');
+    if(logs.success&&logs.data.length>0){
+      let u=`<div style="margin-top:16px;padding:14px;background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15);border-radius:12px">
+        <h3 style="font-size:13px;color:#ef4444;margin-bottom:8px">⚠️ Giao dịch không khớp / Chuyển nhầm (${logs.data.length})</h3>
+        <table><thead><tr><th>#</th><th>Ngày</th><th>Loại</th><th>Ví nhận</th><th>Từ ví</th><th>USDT</th><th>TX Hash</th><th>Chi tiết</th></tr></thead><tbody>`;
+      logs.data.forEach((l,i)=>{const dd=l.detail||{};
+        const tp=l.action==='AMOUNT_MISMATCH'?'<span class="badge" style="background:rgba(245,158,11,.15);color:#f59e0b">❗ Sai số tiền</span>':'<span class="badge" style="background:rgba(239,68,68,.15);color:#ef4444">⚠️ Không khớp</span>';
+        const ex=dd.orderCode?`Đơn ${dd.orderCode}: cần ${dd.expected} USDT, nhận ${dd.received} USDT`:'Không có đơn chờ';
+        u+=`<tr><td>${i+1}</td><td style="font-size:11px">${fmtDate(l.createdAt)}</td><td>${tp}</td><td>${sA(dd.wallet)}</td><td>${sA(dd.from)}</td><td><b>${dd.amount||dd.received||'-'}</b></td><td>${sT(l.target)}</td><td style="font-size:11px;color:var(--text3)">${ex}</td></tr>`;
+      });
+      u+='</tbody></table></div>';
+      document.getElementById('deposits').innerHTML+=u;
+    }
+  }
+  // WITHDRAWALS
+  const wf=document.getElementById('wdFilter')?.value||'';
+  const ws2=document.getElementById('wdSearch')?.value||'';
+  let wq='?limit=200';if(wf)wq+='&status='+wf;if(ws2)wq+='&search='+encodeURIComponent(ws2);
+  const wds=await api('/withdrawals'+wq);
+  if(wds.success){
+    const p=pg(wds.data,wp);
+    document.getElementById('withdrawals').innerHTML=`
+      <div class="filter-bar">
+        <select id="wdFilter" onchange="wp=1;load()"><option value="" ${wf===''?'selected':''}>Tất cả</option><option value="PENDING" ${wf==='PENDING'?'selected':''}>Chờ duyệt</option><option value="APPROVED" ${wf==='APPROVED'?'selected':''}>Đã duyệt</option><option value="SENT" ${wf==='SENT'?'selected':''}>Đã gửi</option><option value="REJECTED" ${wf==='REJECTED'?'selected':''}>Từ chối</option></select>
+        <input id="wdSearch" value="${ws2}" placeholder="🔍 Tìm mã đơn, TX, ví..." onkeydown="if(event.key==='Enter'){wp=1;load()}" style="padding:5px 8px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:8px;color:var(--text);font-size:12px;width:190px">
+        <span class="count">${wds.data.length} đơn</span>
+      </div>
+      <div style="overflow-x:auto"><table><thead><tr><th>#</th><th>Ngày giờ</th><th>Mã đơn</th><th>Partner</th><th>USDT</th><th>VND</th><th>Tới ví</th><th>TX Hash</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${p.items.map((w,i)=>`<tr>
+        <td style="color:var(--text3)">${(p.page-1)*PS+i+1}</td>
+        <td style="font-size:11px;white-space:nowrap">${fmtDate(w.createdAt)}</td>
+        <td class="mono" style="font-size:11px">${w.orderCode}</td>
+        <td>${w.partner?.name||'-'}</td>
+        <td><b>${w.amountUsdt}</b></td>
+        <td>${w.amountVnd?.toLocaleString()||'-'}</td>
+        <td>${sA(w.toAddress)}</td>
+        <td>${sT(w.txHash)}</td>
+        <td>${badge(w.status)}</td>
+        <td>${w.status==='PENDING'?`<button class="btn btn-approve" onclick="approveWd('${w.id}')">✅</button> <button class="btn btn-reject" onclick="rejectWd('${w.id}')">❌</button>`:''}</td>
+      </tr>`).join('')}</tbody></table></div>${pgr(p.pages,p.page,'gWP')}`;
+  }
+  // WALLETS
+  const ws=await api('/wallets');
+  if(ws.success){
+    const bl=window._ocb||[];const gb=a=>bl.find(b=>b.address===a)||{};
+    const dW=ws.data.filter(w=>(w.walletType||'BOTH')==='DEPOSIT'||(w.walletType||'BOTH')==='BOTH');
+    const wW=ws.data.filter(w=>(w.walletType||'BOTH')==='WITHDRAW'||(w.walletType||'BOTH')==='BOTH');
+    const wr=(w,st)=>{const b=gb(w.address);const tx=st&&b.trx!==undefined?`<td><span style="color:${b.lowGas?'#ef4444':'#10b981'};font-weight:700">${b.lowGas?'⚠️':''} ${b.trx}</span> TRX</td>`:(st?'<td>-</td>':'');return`<tr><td>${w.label}</td><td class="mono" style="font-size:10px">${w.address}</td><td><b>${w.balance}</b> USDT</td>${tx}<td style="text-align:center"><b>${w.usageCount||0}</b></td><td>${badge(w.status)}</td><td style="display:flex;gap:4px"><button class="btn btn-reject" onclick="toggleWallet('${w.id}','${w.status==='ACTIVE'?'DISABLED':'ACTIVE'}')">${w.status==='ACTIVE'?'Tắt':'Bật'}</button><button class="btn btn-reject" onclick="deleteWallet('${w.id}')">🗑️</button></td></tr>`;};
+    document.getElementById('wallets').innerHTML=`
+      <button class="btn btn-primary mb-4" onclick="document.getElementById('walletModal').classList.add('show')">➕ Thêm ví</button>
+      <h3 style="font-size:14px;margin:16px 0 8px;color:var(--text2)">📥 Ví Nạp (${dW.length})</h3>
+      <table><thead><tr><th>Tên</th><th>Địa chỉ</th><th>Số dư USDT</th><th>Lượt dùng</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${dW.length?dW.map(w=>wr(w,false)).join(''):'<tr><td colspan="6" style="text-align:center;color:var(--text3)">Chưa có ví nạp</td></tr>'}</tbody></table>
+      <h3 style="font-size:14px;margin:24px 0 8px;color:var(--text2)">📤 Ví Rút (${wW.length})</h3>
+      <table><thead><tr><th>Tên</th><th>Địa chỉ</th><th>Số dư USDT</th><th>TRX (Gas)</th><th>Lượt dùng</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${wW.length?wW.map(w=>wr(w,true)).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text3)">Chưa có ví rút</td></tr>'}</tbody></table>`;
+  }
+  // PARTNERS
+  const ps=await api('/partners');
+  if(ps.success){
+    document.getElementById('partners').innerHTML=`
+      <button class="btn btn-primary mb-4" onclick="document.getElementById('partnerModal').classList.add('show')">➕ Thêm đối tác</button>
+      <table><thead><tr><th>Tên</th><th>API Key</th><th>Secret</th><th>Spread</th><th>Callback</th><th>Trạng thái</th></tr></thead>
+      <tbody>${ps.data.map(p=>`<tr><td><b>${p.name}</b></td><td class="mono">${p.apiKey.slice(0,20)}...</td><td class="mono">${p.secretKey.slice(0,12)}...</td><td>Buy ${p.buySpread}% / Sell ${p.sellSpread}%</td><td class="mono">${p.callbackUrl||'-'}</td><td>${badge(p.isActive?'ACTIVE':'DISABLED')}</td></tr>`).join('')}</tbody></table>`;
+  }
+}
+
+async function confirmDeposit(id){const tx=prompt('Nhập TX Hash:');await api(`/deposits/${id}/confirm`,{method:'POST',body:JSON.stringify({txHash:tx})});load();}
+async function approveWd(id){
+  // Request OTP first
+  const otpRes=await api(`/withdrawals/${id}/request-otp`,{method:'POST'});
+  // Try approve without OTP first
+  const res=await api(`/withdrawals/${id}/approve`,{method:'POST',body:JSON.stringify({})});
+  if(res.success){load();return;}
+  if(res.require2FA){
+    // Show OTP dialog
+    const otp=prompt('🔐 Nhập mã OTP từ Telegram (6 số):');
+    if(!otp)return;
+    const res2=await api(`/withdrawals/${id}/approve`,{method:'POST',body:JSON.stringify({otp})});
+    if(res2.success){alert('✅ Đã duyệt!');load();}
+    else alert('❌ '+res2.error);
+  } else {
+    alert('❌ '+res.error);
+  }
+}
+async function rejectWd(id){if(!confirm('Từ chối lệnh rút?'))return;await api(`/withdrawals/${id}/reject`,{method:'POST'});load();}
+async function toggleWallet(id,status){await api(`/wallets/${id}`,{method:'PUT',body:JSON.stringify({status})});load();}
+async function deleteWallet(id){if(!confirm('Xoá ví này?'))return;await api(`/wallets/${id}`,{method:'DELETE'});load();}
+
+function toggleTheme(){const h=document.documentElement;const c=h.getAttribute('data-theme');const n=c==='light'?'':'light';if(n)h.setAttribute('data-theme','light');else h.removeAttribute('data-theme');document.getElementById('themeBtn').textContent=n==='light'?'☀️':'🌙';localStorage.setItem('ugw_theme',n||'dark');}
+(function(){const s=localStorage.getItem('ugw_theme');if(s==='light'){document.documentElement.setAttribute('data-theme','light');setTimeout(()=>{const b=document.getElementById('themeBtn');if(b)b.textContent='☀️';},100);}})();
+
+async function deriveAndFill(){const seed=document.getElementById('wSeed').value.trim();if(!seed||seed.split(/\s+/).length<12){alert('Nhập đủ 12 từ seed phrase');return;}const r=document.getElementById('wSeedResult');r.style.display='block';r.innerHTML='⏳ Đang derive...';try{const res=await api('/derive-key',{method:'POST',body:JSON.stringify({seedPhrase:seed})});if(res.success){document.getElementById('wAddress').value=res.data.address;document.getElementById('wPrivateKey').value=res.data.privateKey;if(!document.getElementById('wLabel').value)document.getElementById('wLabel').value='Ví '+res.data.address.slice(0,6)+'...'+res.data.address.slice(-4);r.innerHTML='✅ Đã tự điền: <b>'+res.data.address+'</b>';r.style.color='#10b981';}else{r.innerHTML='❌ '+(res.error||'Lỗi');r.style.color='#ef4444';}}catch(e){r.innerHTML='❌ Lỗi kết nối';r.style.color='#ef4444';}}
+
+async function addWallet(){await api('/wallets',{method:'POST',body:JSON.stringify({label:document.getElementById('wLabel').value,address:document.getElementById('wAddress').value,privateKey:document.getElementById('wPrivateKey').value,walletType:document.getElementById('wType').value,network:document.getElementById('wNetwork').value})});closeModal('walletModal');load();}
+async function addPartner(){await api('/partners',{method:'POST',body:JSON.stringify({name:document.getElementById('pName').value,callbackUrl:document.getElementById('pCallback').value,buySpread:parseFloat(document.getElementById('pBuy').value),sellSpread:parseFloat(document.getElementById('pSell').value)})});closeModal('partnerModal');load();}
+
+load();
+setInterval(load,15000);
+
+// SETTINGS
+async function loadSettings(){
+  const res=await api('/settings');if(!res.success)return;const s=res.data;
+  document.getElementById('settings').innerHTML=`
+    <div style="max-width:600px">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#f59e0b">⚙️ Cài đặt tỷ giá</h2>
+      <div class="form-group"><label>Chế độ tỷ giá</label>
+        <select id="sRateMode" onchange="toggleRateInputs()"><option value="auto" ${s.rateMode==='auto'?'selected':''}>🌐 Tự động (Binance P2P)</option><option value="manual" ${s.rateMode==='manual'?'selected':''}>✏️ Thủ công</option></select>
+      </div>
+      <div id="manualRates" style="display:${s.rateMode==='manual'?'block':'none'}">
+        <div class="flex gap-2">
+          <div class="form-group" style="flex:1"><label>Tỷ giá NẠP (VND/USDT)</label><input id="sDepositRate" type="number" value="${s.depositRate}" step="100"></div>
+          <div class="form-group" style="flex:1"><label>Tỷ giá RÚT (VND/USDT)</label><input id="sWithdrawRate" type="number" value="${s.withdrawRate}" step="100"></div>
+        </div>
+      </div>
+      <div class="form-group" style="margin-top:12px"><label>⏱️ Thời gian hiệu lực QR (phút)</label><input id="sExpiryMinutes" type="number" value="${s.depositExpiryMinutes}" step="1" min="5" max="1440"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#ef4444">📤 Cấu hình rút</h2>
+      <div class="form-group"><label>Chế độ rút</label>
+        <select id="sWithdrawMode" onchange="toggleAutoMax()"><option value="manual" ${(s.withdrawMode||'manual')==='manual'?'selected':''}>🔒 Duyệt thủ công (mặc định)</option><option value="auto" ${s.withdrawMode==='auto'?'selected':''}>⚡ Tự động (dưới mức giới hạn)</option></select>
+      </div>
+      <div id="autoMaxDiv" style="display:${s.withdrawMode==='auto'?'block':'none'}">
+        <div class="form-group"><label>Mức tối đa tự động rút (USDT)</label><input id="sAutoWithdrawMax" type="number" value="${s.autoWithdrawMax||200}" step="10" min="1">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Đơn rút ≤ mức này sẽ tự động duyệt & gửi.</div></div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#06b6d4">🔗 TronGrid API</h2>
+      <div class="form-group"><label>TronGrid API Key</label><input id="sTrongridKey" value="${s.trongridApiKey}" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#10b981">💼 Ví nạp/rút (Hot Wallet)</h2>
+      <div class="form-group"><label>Địa chỉ ví TRC20</label><input id="sWalletAddress" value="${s.hotWalletAddress}" placeholder="TXyz..."></div>
+      <div class="form-group"><label>Private Key ${s.hotWalletPrivateKey?'<span style="color:#10b981">✅ Đã cấu hình</span>':'<span style="color:#ef4444">⚠️ Chưa có</span>'}</label><input id="sWalletPK" type="password" value="" placeholder="${s.hotWalletPrivateKey?'Để trống nếu không đổi':'Nhập private key'}"></div>
+
+      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#a855f7">🔑 Lấy Private Key từ Seed Phrase</h2>
+      <div class="form-group"><label>Nhập 12 từ seed phrase</label><input id="sSeedPhrase" type="password" placeholder="word1 word2 word3 ... word12"></div>
+      <button class="btn" onclick="deriveKey()" style="background:rgba(168,85,247,.15);color:#a855f7;border:1px solid rgba(168,85,247,.2);margin-bottom:8px">🔓 Lấy Private Key</button>
+      <div id="deriveResult" style="display:none;margin-top:8px;padding:12px;background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.15);border-radius:10px;font-size:12px"></div>
+
+      <hr style="border:none;border-top:2px solid var(--border);margin:24px 0">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#ef4444">🔒 Bảo mật</h2>
+
+      <div class="form-group"><label>📱 Telegram Bot Token</label><input id="sTgToken" value="${s.telegramBotToken||''}" placeholder="123456:ABC..."></div>
+      <div class="form-group"><label>💬 Telegram Chat/Group ID</label><input id="sTgChatId" value="${s.telegramChatId||''}" placeholder="-100..."></div>
+
+      <div class="form-group" style="margin-top:16px"><label>🔐 2FA OTP cho duyệt rút</label>
+        <select id="s2fa"><option value="false" ${s.twoFaEnabled!=='true'?'selected':''}>🔓 Tắt</option><option value="true" ${s.twoFaEnabled==='true'?'selected':''}>🔒 Bật (OTP qua Telegram)</option></select>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Khi bật: Admin duyệt rút → OTP gửi về Telegram → nhập đúng mới duyệt được</div>
+      </div>
+
+      <div class="form-group"><label>📊 Giới hạn rút/ngày (USDT)</label><input id="sDailyLimit" type="number" value="${s.dailyWithdrawLimit||0}" step="10" min="0">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">0 = không giới hạn</div></div>
+
+      <div class="form-group"><label>⏳ Cooldown rút (phút)</label><input id="sCooldown" type="number" value="${s.withdrawCooldown||0}" step="1" min="0">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">0 = tắt. Mỗi partner chỉ rút 1 lần / X phút</div></div>
+
+      <div class="form-group"><label>⚡ Rate limit API (request/phút)</label><input id="sRateLimit" type="number" value="${s.apiRateLimit||60}" step="10" min="10"></div>
+
+      <div class="form-group" style="margin-top:16px"><label>🌐 IP Whitelist Admin</label>
+        <select id="sIpEnabled"><option value="false" ${s.adminIpWhitelistEnabled!=='true'?'selected':''}>🔓 Tắt (mọi IP)</option><option value="true" ${s.adminIpWhitelistEnabled==='true'?'selected':''}>🔒 Bật</option></select>
+      </div>
+      <div class="form-group"><label>Danh sách IP (phân cách bằng dấu phẩy)</label><input id="sIpList" value="${s.adminIpWhitelist||''}" placeholder="1.2.3.4, 5.6.7.8">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px">Chỉ có hiệu lực khi bật IP Whitelist</div></div>
+
+      <button class="btn btn-primary mt-2" onclick="saveSettings()" style="margin-top:16px">💾 Lưu tất cả</button>
+    </div>`;
+}
+
+function toggleRateInputs(){document.getElementById('manualRates').style.display=document.getElementById('sRateMode').value==='manual'?'block':'none';}
+function toggleAutoMax(){document.getElementById('autoMaxDiv').style.display=document.getElementById('sWithdrawMode').value==='auto'?'block':'none';}
+
+async function saveSettings(){
+  const body={rateMode:document.getElementById('sRateMode').value};
+  if(body.rateMode==='manual'){body.depositRate=document.getElementById('sDepositRate').value;body.withdrawRate=document.getElementById('sWithdrawRate').value;}
+  const tk=document.getElementById('sTrongridKey').value;const wa=document.getElementById('sWalletAddress').value;const pk=document.getElementById('sWalletPK').value;
+  if(tk)body.trongridApiKey=tk;if(wa)body.hotWalletAddress=wa;if(pk)body.hotWalletPrivateKey=pk;
+  body.depositExpiryMinutes=document.getElementById('sExpiryMinutes').value;
+  body.withdrawMode=document.getElementById('sWithdrawMode').value;
+  body.autoWithdrawMax=document.getElementById('sAutoWithdrawMax')?.value||'200';
+  // Security
+  const tgToken=document.getElementById('sTgToken').value;
+  const tgChat=document.getElementById('sTgChatId').value;
+  if(tgToken&&tgToken!=='***configured***')body.telegramBotToken=tgToken;
+  if(tgChat)body.telegramChatId=tgChat;
+  body.twoFaEnabled=document.getElementById('s2fa').value;
+  body.dailyWithdrawLimit=document.getElementById('sDailyLimit').value;
+  body.withdrawCooldown=document.getElementById('sCooldown').value;
+  body.apiRateLimit=document.getElementById('sRateLimit').value;
+  body.adminIpWhitelistEnabled=document.getElementById('sIpEnabled').value;
+  body.adminIpWhitelist=document.getElementById('sIpList').value;
+  const res=await api('/settings',{method:'POST',body:JSON.stringify(body)});
+  if(res.success){alert('✅ Đã lưu cài đặt!');loadSettings();}else alert('❌ Lỗi: '+res.error);
+}
+
+async function deriveKey(){
+  const seed=document.getElementById('sSeedPhrase').value.trim();if(!seed){alert('Nhập seed phrase trước');return;}
+  const words=seed.split(/\s+/);if(words.length!==12){alert('Cần đúng 12 từ, hiện có '+words.length+' từ');return;}
+  const rd=document.getElementById('deriveResult');rd.style.display='block';rd.innerHTML='<span style="color:#a855f7">⏳ Đang xử lý...</span>';
+  const res=await api('/derive-key',{method:'POST',body:JSON.stringify({seedPhrase:seed})});
+  if(res.success){const d=res.data;rd.innerHTML=`<div style="color:#10b981;margin-bottom:8px">✅ Thành công!</div><div><b>Address:</b> <span class="mono">${d.address}</span></div><div><b>Private Key:</b> <span class="mono">${d.privateKey.slice(0,8)}...${d.privateKey.slice(-8)}</span></div><div style="margin-top:8px"><button class="btn btn-approve" onclick="applyDerivedKey('${d.address}','${d.privateKey}')">✅ Áp dụng vào cài đặt</button></div>`;document.getElementById('sSeedPhrase').value='';}
+  else{rd.innerHTML='<span style="color:#ef4444">❌ '+res.error+'</span>';}
+}
+
+function applyDerivedKey(a,pk){document.getElementById('sWalletAddress').value=a;document.getElementById('sWalletPK').value=pk;document.getElementById('deriveResult').innerHTML='<span style="color:#10b981">✅ Đã điền vào form. Bấm "💾 Lưu tất cả" để lưu.</span>';}
+</script>
+</body>
+</html>
