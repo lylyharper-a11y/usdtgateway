@@ -439,6 +439,14 @@ router.get("/settings", async (_req: Request, res: Response) => {
         adminIpWhitelist: map.admin_ip_whitelist || "",
         apiRateLimit: map.api_rate_limit || "60",
         withdrawCooldown: map.withdraw_cooldown || "0",
+        // Alert toggles
+        alertLogin: map.alert_login ?? "true",
+        alertDeposit: map.alert_deposit ?? "true",
+        alertWithdrawal: map.alert_withdrawal ?? "true",
+        alertWallet: map.alert_wallet ?? "true",
+        alertPartner: map.alert_partner ?? "true",
+        alertLowTrx: map.alert_low_trx ?? "true",
+        alertUnmatched: map.alert_unmatched ?? "true",
       },
     });
   } catch (err: any) {
@@ -480,6 +488,15 @@ router.post("/settings", async (req: Request, res: Response) => {
     if (b.adminIpWhitelist !== undefined) upsert("admin_ip_whitelist", b.adminIpWhitelist);
     if (b.apiRateLimit !== undefined) upsert("api_rate_limit", String(b.apiRateLimit));
     if (b.withdrawCooldown !== undefined) upsert("withdraw_cooldown", String(b.withdrawCooldown));
+
+    // Alert toggles
+    if (b.alertLogin !== undefined) upsert("alert_login", b.alertLogin);
+    if (b.alertDeposit !== undefined) upsert("alert_deposit", b.alertDeposit);
+    if (b.alertWithdrawal !== undefined) upsert("alert_withdrawal", b.alertWithdrawal);
+    if (b.alertWallet !== undefined) upsert("alert_wallet", b.alertWallet);
+    if (b.alertPartner !== undefined) upsert("alert_partner", b.alertPartner);
+    if (b.alertLowTrx !== undefined) upsert("alert_low_trx", b.alertLowTrx);
+    if (b.alertUnmatched !== undefined) upsert("alert_unmatched", b.alertUnmatched);
 
     await Promise.all(upserts);
     clearSettingsCache();

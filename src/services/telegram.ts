@@ -3,6 +3,33 @@ import { prisma } from "../lib/prisma";
 // In-memory OTP store: { code, expiresAt, action, targetId }
 const otpStore = new Map<string, { code: string; expiresAt: number; action: string; targetId: string }>();
 
+// Alert debounce: prevent spam for same alert type+key
+const _alertDebounce = new Map<string, number>();
+function shouldAlert(type: string, key: string, cooldownMs: number): boolean {
+  const k = `${type}:${key}`;
+  const last = _alertDebounce.get(k) || 0;
+  if (Date.now() - last < cooldownMs) return false;
+  _alertDebounce.set(k, Date.now());
+  // Cleanup old entries
+  if (_alertDebounce.size > 500) {
+    const now = Date.now();
+    for (const [dk, dv] of _alertDebounce) {
+      if (now - dv > 24 * 60 * 60 * 1000) _alertDebounce.delete(dk);
+    }
+  }
+  return true;
+}
+
+// Check if a specific alert type is enabled in settings
+// Settings keys: alert_login, alert_deposit, alert_withdrawal, alert_wallet, alert_partner, alert_low_trx, alert_unmatched
+async function isAlertEnabled(type: string): Promise<boolean> {
+  try {
+    const s = await prisma.setting.findUnique({ where: { key: `alert_${type}` } });
+    // Default: enabled (if no setting exists, alert is on)
+    return s?.value !== "false";
+  } catch { return true; }
+}
+
 // Get Telegram config from Settings table
 async function getTelegramConfig(): Promise<{ token: string; chatId: string }> {
   const [tokenS, chatS] = await Promise.all([
@@ -23,7 +50,7 @@ export async function sendAlert(text: string) {
     await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
+      body: JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML", disable_web_page_preview: true }),
       signal: AbortSignal.timeout(5000),
     });
   } catch (err: any) {
@@ -191,6 +218,8 @@ const TRONSCAN = "https://tronscan.org/#/transaction/";
 const TRONSCAN_ADDR = "https://tronscan.org/#/address/";
 
 export async function alertLogin(ip: string, userAgent: string) {
+  if (!(await isAlertEnabled("login"))) return;
+  if (!shouldAlert("login", ip, 2 * 60 * 60 * 1000)) return; // 2h per IP
   await sendAlert(
     `🔐 <b>Admin đăng nhập CMS</b>\n` +
     `🌐 IP: <code>${ip}</code>\n` +
@@ -200,6 +229,7 @@ export async function alertLogin(ip: string, userAgent: string) {
 }
 
 export async function alertNewDeposit(orderCode: string, amount: number, wallet: string) {
+  if (!(await isAlertEnabled("deposit"))) return;
   await sendAlert(
     `📥 <b>Lệnh nạp mới</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
@@ -210,6 +240,7 @@ export async function alertNewDeposit(orderCode: string, amount: number, wallet:
 }
 
 export async function alertDepositConfirmed(orderCode: string, amount: number, txHash: string) {
+  if (!(await isAlertEnabled("deposit"))) return;
   await sendAlert(
     `✅ <b>Nạp thành công</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
@@ -220,6 +251,7 @@ export async function alertDepositConfirmed(orderCode: string, amount: number, t
 }
 
 export async function alertNewWithdrawal(orderCode: string, amount: number, toAddress: string) {
+  if (!(await isAlertEnabled("withdrawal"))) return;
   await sendAlert(
     `📤 <b>Lệnh rút mới</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
@@ -230,7 +262,7 @@ export async function alertNewWithdrawal(orderCode: string, amount: number, toAd
 }
 
 export async function alertWithdrawalPending(orderCode: string, amount: number, toAddress: string) {
-  // Check if 2FA enabled
+  if (!(await isAlertEnabled("withdrawal"))) return;
   const s = await prisma.setting.findUnique({ where: { key: "2fa_enabled" } });
   const has2FA = s?.value === "true";
 
@@ -250,6 +282,7 @@ export async function alertWithdrawalPending(orderCode: string, amount: number, 
 }
 
 export async function alertWithdrawalSent(orderCode: string, amount: number, toAddress: string, txHash: string) {
+  if (!(await isAlertEnabled("withdrawal"))) return;
   await sendAlert(
     `💸 <b>Rút thành công</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
@@ -261,6 +294,7 @@ export async function alertWithdrawalSent(orderCode: string, amount: number, toA
 }
 
 export async function alertWithdrawalFailed(orderCode: string, amount: number, error: string) {
+  if (!(await isAlertEnabled("withdrawal"))) return;
   await sendAlert(
     `❌ <b>Rút thất bại</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
@@ -270,6 +304,8 @@ export async function alertWithdrawalFailed(orderCode: string, amount: number, e
 }
 
 export async function alertLowTRX(walletLabel: string, address: string, trxBalance: number) {
+  if (!(await isAlertEnabled("low_trx"))) return;
+  if (!shouldAlert("low_trx", address, 60 * 60 * 1000)) return; // 1h per wallet
   await sendAlert(
     `🔋 <b>TRX thấp — Cần nạp gas!</b>\n` +
     `💼 Ví: ${walletLabel}\n` +
@@ -280,6 +316,8 @@ export async function alertLowTRX(walletLabel: string, address: string, trxBalan
 }
 
 export async function alertUnmatched(txHash: string, amount: number, from: string, wallet: string) {
+  if (!(await isAlertEnabled("unmatched"))) return;
+  if (!shouldAlert("unmatched", txHash, 30 * 60 * 1000)) return; // 30min per TX
   await sendAlert(
     `⚡ <b>Giao dịch không khớp</b>\n` +
     `💰 ${amount} USDT\n` +
@@ -293,6 +331,7 @@ export async function alertUnmatched(txHash: string, amount: number, from: strin
 
 // Wallet CRUD alerts
 export async function alertWalletAction(action: string, label: string, address: string, walletType: string) {
+  if (!(await isAlertEnabled("wallet"))) return;
   const icons: Record<string, string> = { add: "➕", edit: "✏️", delete: "🗑️" };
   const labels: Record<string, string> = { add: "Thêm ví mới", edit: "Sửa ví", delete: "Xoá ví" };
   await sendAlert(
@@ -306,6 +345,7 @@ export async function alertWalletAction(action: string, label: string, address: 
 
 // Partner CRUD alerts
 export async function alertPartnerAction(action: string, name: string, detail: string) {
+  if (!(await isAlertEnabled("partner"))) return;
   const icons: Record<string, string> = { add: "➕", edit: "✏️", delete: "🗑️" };
   const labels: Record<string, string> = { add: "Thêm đối tác mới", edit: "Sửa đối tác", delete: "Xoá đối tác" };
   await sendAlert(

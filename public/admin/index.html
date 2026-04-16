@@ -500,6 +500,34 @@ async function loadSettings(){
       <div class="form-group"><label>Danh sách IP (phân cách bằng dấu phẩy)</label><input id="sIpList" value="${s.adminIpWhitelist||''}" placeholder="1.2.3.4, 5.6.7.8">
         <div style="font-size:11px;color:var(--text3);margin-top:4px">Chỉ có hiệu lực khi bật IP Whitelist</div></div>
 
+      <hr style="border:none;border-top:2px solid var(--border);margin:24px 0">
+      <h2 style="font-size:16px;margin-bottom:16px;color:#8b5cf6">📢 Thông báo Telegram</h2>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Chọn loại thông báo muốn nhận qua Telegram bot. Mặc định: tất cả bật.</div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertLogin" style="width:70px"><option value="true" ${s.alertLogin!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertLogin==='false'?'selected':''}>❌ Tắt</option></select>
+          🔐 Đăng nhập Admin</label></div>
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertDeposit" style="width:70px"><option value="true" ${s.alertDeposit!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertDeposit==='false'?'selected':''}>❌ Tắt</option></select>
+          📥 Nạp USDT</label></div>
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertWithdrawal" style="width:70px"><option value="true" ${s.alertWithdrawal!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertWithdrawal==='false'?'selected':''}>❌ Tắt</option></select>
+          📤 Rút USDT</label></div>
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertWallet" style="width:70px"><option value="true" ${s.alertWallet!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertWallet==='false'?'selected':''}>❌ Tắt</option></select>
+          💼 Thêm/sửa/xoá Ví</label></div>
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertPartner" style="width:70px"><option value="true" ${s.alertPartner!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertPartner==='false'?'selected':''}>❌ Tắt</option></select>
+          👥 Thêm/sửa/xoá Đối tác</label></div>
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertLowTrx" style="width:70px"><option value="true" ${s.alertLowTrx!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertLowTrx==='false'?'selected':''}>❌ Tắt</option></select>
+          🔋 TRX thấp (gas)</label></div>
+        <div class="form-group" style="margin-bottom:4px"><label style="display:flex;align-items:center;gap:8px">
+          <select id="sAlertUnmatched" style="width:70px"><option value="true" ${s.alertUnmatched!=='false'?'selected':''}>✅ Bật</option><option value="false" ${s.alertUnmatched==='false'?'selected':''}>❌ Tắt</option></select>
+          ⚡ Giao dịch không khớp</label></div>
+      </div>
+
       <button class="btn btn-primary mt-2" onclick="saveSettings()" style="margin-top:16px">💾 Lưu tất cả</button>
     </div>`;
 }
@@ -526,8 +554,16 @@ async function saveSettings(){
   body.apiRateLimit=document.getElementById('sRateLimit').value;
   body.adminIpWhitelistEnabled=document.getElementById('sIpEnabled').value;
   body.adminIpWhitelist=document.getElementById('sIpList').value;
+  // Alert toggles
+  body.alertLogin=document.getElementById('sAlertLogin').value;
+  body.alertDeposit=document.getElementById('sAlertDeposit').value;
+  body.alertWithdrawal=document.getElementById('sAlertWithdrawal').value;
+  body.alertWallet=document.getElementById('sAlertWallet').value;
+  body.alertPartner=document.getElementById('sAlertPartner').value;
+  body.alertLowTrx=document.getElementById('sAlertLowTrx').value;
+  body.alertUnmatched=document.getElementById('sAlertUnmatched').value;
   const res=await api('/settings',{method:'POST',body:JSON.stringify(body)});
-  if(res.success){alert('✅ Đã lưu cài đặt!');loadSettings();}else alert('❌ Lỗi: '+res.error);
+  if(res.success){toast('✅ Đã lưu cài đặt!');loadSettings();}else alert('❌ Lỗi: '+res.error);
 }
 
 async function deriveKey(){

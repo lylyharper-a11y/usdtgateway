@@ -79,10 +79,10 @@ export async function verifyAdmin(req: Request, res: Response, next: NextFunctio
     return;
   }
 
-  // Login alert (debounced per IP, only on first auth or every 10 min)
+  // Login alert (debounced per IP — 1 lần / 2 giờ)
   const clientIP = getClientIP(req);
   const lastAlert = _loginAlerted.get(clientIP) || 0;
-  if (Date.now() - lastAlert > 10 * 60 * 1000) {
+  if (Date.now() - lastAlert > 2 * 60 * 60 * 1000) {
     _loginAlerted.set(clientIP, Date.now());
     alertLogin(clientIP, req.headers["user-agent"] || "").catch(() => {});
   }
