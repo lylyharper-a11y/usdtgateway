@@ -2,6 +2,14 @@ import { Request, Response, NextFunction } from "express";
 import { prisma } from "./prisma";
 import { alertLogin } from "../services/telegram";
 
+// Extract real client IP
+function getClientIP(req: Request): string {
+  const xff = req.headers["x-forwarded-for"];
+  const forwarded = Array.isArray(xff) ? xff[0] : xff;
+  const raw = forwarded?.split(",")[0]?.trim() || req.ip || req.socket.remoteAddress || "";
+  // Strip IPv6-mapped IPv4 prefix
+  return raw.replace(/^::ffff:/, "").replace(/^::1$/, "127.0.0.1");
+}
 // Cache for settings to avoid DB hit on every request
 let _settingsCache: Record<string, string> = {};
 let _settingsCacheTime = 0;
@@ -53,7 +61,7 @@ export async function verifyAdmin(req: Request, res: Response, next: NextFunctio
   const ipWhitelistEnabled = settings["admin_ip_whitelist_enabled"] === "true";
   if (ipWhitelistEnabled) {
     const whitelist = (settings["admin_ip_whitelist"] || "").split(",").map(s => s.trim()).filter(Boolean);
-    const clientIP = req.ip || req.socket.remoteAddress || "";
+    const clientIP = getClientIP(req);
     if (whitelist.length > 0 && !whitelist.some(ip => clientIP.includes(ip))) {
       res.status(403).json({ error: "IP not allowed" });
       return;
@@ -72,7 +80,7 @@ export async function verifyAdmin(req: Request, res: Response, next: NextFunctio
   }
 
   // Login alert (debounced per IP, only on first auth or every 10 min)
-  const clientIP = req.ip || req.socket.remoteAddress || "";
+  const clientIP = getClientIP(req);
   const lastAlert = _loginAlerted.get(clientIP) || 0;
   if (Date.now() - lastAlert > 10 * 60 * 1000) {
     _loginAlerted.set(clientIP, Date.now());
@@ -89,7 +97,7 @@ export async function rateLimitMiddleware(req: Request, res: Response, next: Nex
   const settings = await getSettings();
   const limit = parseInt(settings["api_rate_limit"] || "60") || 60;
 
-  const key = req.ip || req.socket.remoteAddress || "unknown";
+  const key = getClientIP(req) || "unknown";
   const now = Date.now();
   let entry = _rateLimits.get(key);
 
