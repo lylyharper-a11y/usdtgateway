@@ -187,6 +187,9 @@ async function getBotUsername(token: string): Promise<string> {
 }
 
 // Alert helpers
+const TRONSCAN = "https://tronscan.org/#/transaction/";
+const TRONSCAN_ADDR = "https://tronscan.org/#/address/";
+
 export async function alertLogin(ip: string, userAgent: string) {
   await sendAlert(
     `🔐 <b>Admin đăng nhập CMS</b>\n` +
@@ -201,7 +204,8 @@ export async function alertNewDeposit(orderCode: string, amount: number, wallet:
     `📥 <b>Lệnh nạp mới</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
     `💰 ${amount} USDT\n` +
-    `💼 Ví: <code>${wallet}</code>`
+    `💼 Ví: <code>${wallet}</code>\n` +
+    `🔍 <a href="${TRONSCAN_ADDR}${wallet}">Xem ví trên Tronscan</a>`
   );
 }
 
@@ -210,7 +214,8 @@ export async function alertDepositConfirmed(orderCode: string, amount: number, t
     `✅ <b>Nạp thành công</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
     `💰 ${amount} USDT\n` +
-    `🔗 TX: <code>${txHash}</code>`
+    `🔗 TX: <code>${txHash}</code>\n` +
+    `🔍 <a href="${TRONSCAN}${txHash}">Kiểm tra TX trên Tronscan</a>`
   );
 }
 
@@ -219,7 +224,8 @@ export async function alertNewWithdrawal(orderCode: string, amount: number, toAd
     `📤 <b>Lệnh rút mới</b>\n` +
     `📋 Mã: <code>${orderCode}</code>\n` +
     `💰 ${amount} USDT\n` +
-    `📤 Tới: <code>${toAddress}</code>`
+    `📤 Tới: <code>${toAddress}</code>\n` +
+    `🔍 <a href="${TRONSCAN_ADDR}${toAddress}">Xem ví nhận trên Tronscan</a>`
   );
 }
 
@@ -249,7 +255,8 @@ export async function alertWithdrawalSent(orderCode: string, amount: number, toA
     `📋 Mã: <code>${orderCode}</code>\n` +
     `💰 ${amount} USDT\n` +
     `📤 Tới: <code>${toAddress}</code>\n` +
-    `🔗 TX: <code>${txHash}</code>`
+    `🔗 TX: <code>${txHash}</code>\n` +
+    `🔍 <a href="${TRONSCAN}${txHash}">Kiểm tra TX trên Tronscan</a>`
   );
 }
 
@@ -267,7 +274,8 @@ export async function alertLowTRX(walletLabel: string, address: string, trxBalan
     `🔋 <b>TRX thấp — Cần nạp gas!</b>\n` +
     `💼 Ví: ${walletLabel}\n` +
     `📍 <code>${address}</code>\n` +
-    `⚡ TRX còn: <b>${trxBalance}</b> (cần ≥ 30 TRX)`
+    `⚡ TRX còn: <b>${trxBalance}</b> (cần ≥ 30 TRX)\n` +
+    `🔍 <a href="${TRONSCAN_ADDR}${address}">Xem trên Tronscan</a>`
   );
 }
 
@@ -278,6 +286,33 @@ export async function alertUnmatched(txHash: string, amount: number, from: strin
     `📤 Từ: <code>${from}</code>\n` +
     `💼 Ví: <code>${wallet}</code>\n` +
     `🔗 TX: <code>${txHash}</code>\n` +
+    `🔍 <a href="${TRONSCAN}${txHash}">Kiểm tra TX trên Tronscan</a>\n` +
     `⚠️ Cần kiểm tra thủ công!`
   );
 }
+
+// Wallet CRUD alerts
+export async function alertWalletAction(action: string, label: string, address: string, walletType: string) {
+  const icons: Record<string, string> = { add: "➕", edit: "✏️", delete: "🗑️" };
+  const labels: Record<string, string> = { add: "Thêm ví mới", edit: "Sửa ví", delete: "Xoá ví" };
+  await sendAlert(
+    `${icons[action] || "💼"} <b>${labels[action] || action}</b>\n` +
+    `💼 Tên: ${label}\n` +
+    `📍 Ví: <code>${address}</code>\n` +
+    `📂 Loại: ${walletType}\n` +
+    `🕐 ${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
+  );
+}
+
+// Partner CRUD alerts
+export async function alertPartnerAction(action: string, name: string, detail: string) {
+  const icons: Record<string, string> = { add: "➕", edit: "✏️", delete: "🗑️" };
+  const labels: Record<string, string> = { add: "Thêm đối tác mới", edit: "Sửa đối tác", delete: "Xoá đối tác" };
+  await sendAlert(
+    `${icons[action] || "👥"} <b>${labels[action] || action}</b>\n` +
+    `👤 Tên: ${name}\n` +
+    `📝 ${detail}\n` +
+    `🕐 ${new Date().toLocaleString("vi-VN", { timeZone: "Asia/Ho_Chi_Minh" })}`
+  );
+}
+

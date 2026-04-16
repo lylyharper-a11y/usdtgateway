@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import { prisma } from "../lib/prisma";
 import { encrypt, generateApiKey, generateSecretKey } from "../lib/crypto";
 import { fetchRate, getDepositWithdrawRates } from "../services/rate";
-import { send2FA, verify2FA } from "../services/telegram";
+import { send2FA, verify2FA, alertWalletAction, alertPartnerAction } from "../services/telegram";
 import { clearSettingsCache } from "../lib/auth";
 
 const router = Router();
@@ -138,6 +138,7 @@ router.post("/wallets", async (req: Request, res: Response) => {
     const wallet = await prisma.wallet.create({
       data: { label, address, privateKey: encrypt(privateKey), network, walletType },
     });
+    alertWalletAction("add", label, address, walletType).catch(() => {});
     res.json({ success: true, data: { ...wallet, privateKey: "***" } });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -151,6 +152,7 @@ router.put("/wallets/:id", async (req: Request, res: Response) => {
       where: { id: req.params.id },
       data: { ...(label && { label }), ...(status && { status }) },
     });
+    alertWalletAction("edit", wallet.label, wallet.address, `${status||'no change'}`).catch(() => {});
     res.json({ success: true, data: { ...wallet, privateKey: "***" } });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -159,9 +161,10 @@ router.put("/wallets/:id", async (req: Request, res: Response) => {
 
 router.delete("/wallets/:id", async (req: Request, res: Response) => {
   try {
-    // Detach deposits referencing this wallet
+    const wallet = await prisma.wallet.findUnique({ where: { id: req.params.id } });
     await prisma.deposit.updateMany({ where: { walletId: req.params.id }, data: { walletId: null } });
     await prisma.wallet.delete({ where: { id: req.params.id } });
+    if (wallet) alertWalletAction("delete", wallet.label, wallet.address, wallet.walletType).catch(() => {});
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -189,6 +192,7 @@ router.post("/partners", async (req: Request, res: Response) => {
         sellSpread,
       },
     });
+    alertPartnerAction("add", name, `Callback: ${callbackUrl || 'N/A'}, Spread: Buy ${buySpread}% / Sell ${sellSpread}%`).catch(() => {});
     res.json({ success: true, data: partner });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -208,6 +212,7 @@ router.put("/partners/:id", async (req: Request, res: Response) => {
         ...(isActive !== undefined && { isActive }),
       },
     });
+    alertPartnerAction("edit", partner.name, `Active: ${partner.isActive}, Spread: Buy ${partner.buySpread}% / Sell ${partner.sellSpread}%`).catch(() => {});
     res.json({ success: true, data: partner });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
@@ -223,10 +228,14 @@ router.delete("/partners/:id", async (req: Request, res: Response) => {
     if (deps > 0 || wds > 0) {
       // Deactivate instead of delete
       await prisma.partner.update({ where: { id }, data: { isActive: false } });
+      const p = await prisma.partner.findUnique({ where: { id } });
+      alertPartnerAction("delete", p?.name || id, `Có ${deps} nạp + ${wds} rút → vô hiệu hoá`).catch(() => {});
       res.json({ success: true, message: `Partner có ${deps} nạp + ${wds} rút. Đã vô hiệu hoá thay vì xoá.` });
       return;
     }
+    const p2 = await prisma.partner.findUnique({ where: { id } });
     await prisma.partner.delete({ where: { id } });
+    alertPartnerAction("delete", p2?.name || id, "Đã xoá hoàn toàn").catch(() => {});
     res.json({ success: true });
   } catch (err: any) {
     res.status(500).json({ success: false, error: err.message });
