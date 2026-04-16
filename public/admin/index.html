@@ -325,9 +325,38 @@ async function load(){
   if(ps.success){
     document.getElementById('partners').innerHTML=`
       <button class="btn btn-primary mb-4" onclick="document.getElementById('partnerModal').classList.add('show')">➕ Thêm đối tác</button>
-      <table><thead><tr><th>Tên</th><th>API Key</th><th>Secret</th><th>Spread</th><th>Callback</th><th>Trạng thái</th></tr></thead>
-      <tbody>${ps.data.map(p=>`<tr><td><b>${p.name}</b></td><td class="mono">${p.apiKey.slice(0,20)}...</td><td class="mono">${p.secretKey.slice(0,12)}...</td><td>Buy ${p.buySpread}% / Sell ${p.sellSpread}%</td><td class="mono">${p.callbackUrl||'-'}</td><td>${badge(p.isActive?'ACTIVE':'DISABLED')}</td></tr>`).join('')}</tbody></table>`;
+      <table><thead><tr><th>Tên</th><th>API Key</th><th>Secret</th><th>Spread</th><th>Callback</th><th>Trạng thái</th><th></th></tr></thead>
+      <tbody>${ps.data.map(p=>`<tr>
+        <td><b>${p.name}</b></td>
+        <td class="mono" style="font-size:10px;cursor:pointer" onclick="navigator.clipboard.writeText('${p.apiKey}');this.style.color='#10b981'" title="Click copy">${p.apiKey.slice(0,20)}...</td>
+        <td class="mono" style="font-size:10px;cursor:pointer" onclick="navigator.clipboard.writeText('${p.secretKey}');this.style.color='#10b981'" title="Click copy">${p.secretKey.slice(0,12)}...</td>
+        <td>Buy ${p.buySpread}% / Sell ${p.sellSpread}%</td>
+        <td class="mono" style="font-size:10px">${p.callbackUrl||'-'}</td>
+        <td>${badge(p.isActive?'ACTIVE':'DISABLED')}</td>
+        <td style="display:flex;gap:4px">
+          <button class="btn" onclick="editPartner('${p.id}','${p.name}','${p.callbackUrl||''}',${p.buySpread},${p.sellSpread},${p.isActive})" style="font-size:11px">✏️</button>
+          <button class="btn btn-reject" onclick="deletePartner('${p.id}','${p.name}')" style="font-size:11px">🗑️</button>
+        </td>
+      </tr>`).join('')}</tbody></table>`;
   }
+}
+
+async function editPartner(id,name,cb,bs,ss,active){
+  const html=`<b>Sửa đối tác: ${name}</b>\n\nTên: ${name}\nCallback URL:\nBuy Spread %:\nSell Spread %:\nTrạng thái: ${active?'Bật':'Tắt'}`;
+  const newName=prompt('📝 Tên đối tác:',name);if(newName===null)return;
+  const newCb=prompt('🔗 Callback URL:',cb);if(newCb===null)return;
+  const newBs=prompt('📈 Buy Spread %:',bs);if(newBs===null)return;
+  const newSs=prompt('📉 Sell Spread %:',ss);if(newSs===null)return;
+  const newActive=confirm('✅ Bật đối tác? (OK=Bật, Cancel=Tắt)');
+  const res=await api(`/partners/${id}`,{method:'PUT',body:JSON.stringify({
+    name:newName,callbackUrl:newCb||null,buySpread:parseFloat(newBs),sellSpread:parseFloat(newSs),isActive:newActive
+  })});
+  if(res.success){alert('✅ Đã cập nhật!');load();}else alert('❌ '+res.error);
+}
+async function deletePartner(id,name){
+  if(!confirm(`Xoá đối tác "${name}"? Partner có giao dịch sẽ bị vô hiệu thay vì xoá.`))return;
+  const res=await api(`/partners/${id}`,{method:'DELETE'});
+  if(res.success){alert(res.message||'✅ Đã xoá!');load();}else alert('❌ '+res.error);
 }
 
 async function confirmDeposit(id){const tx=prompt('Nhập TX Hash:');await api(`/deposits/${id}/confirm`,{method:'POST',body:JSON.stringify({txHash:tx})});load();}

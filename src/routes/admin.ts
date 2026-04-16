@@ -214,6 +214,25 @@ router.put("/partners/:id", async (req: Request, res: Response) => {
   }
 });
 
+router.delete("/partners/:id", async (req: Request, res: Response) => {
+  try {
+    const id = req.params.id;
+    // Check if partner has transactions
+    const deps = await prisma.deposit.count({ where: { partnerId: id } });
+    const wds = await prisma.withdrawal.count({ where: { partnerId: id } });
+    if (deps > 0 || wds > 0) {
+      // Deactivate instead of delete
+      await prisma.partner.update({ where: { id }, data: { isActive: false } });
+      res.json({ success: true, message: `Partner có ${deps} nạp + ${wds} rút. Đã vô hiệu hoá thay vì xoá.` });
+      return;
+    }
+    await prisma.partner.delete({ where: { id } });
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // ==================== DEPOSITS ====================
 router.get("/deposits", async (req: Request, res: Response) => {
   const { status, walletId, search, limit = "100" } = req.query;
